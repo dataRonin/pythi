@@ -92,14 +92,73 @@ Discussion of the back-end integration here
 glitch_bottle.py
 =============
 
-The glitch interface is a simple set of accordion menus that look into the database and find the appropriate probes.
+The glitch interface is a simple set of accordion menus that look into the database and find the appropriate tables and probes.
 
 .. image:: pythi1.png
-    :alt: Mr.T shuns bad science
-    :width: 500
-    :height: 500
+    :alt: Entry portal
+    :width: 300
+    :height: 300
     :align: center
 
+You can see here how we drop down from MS001 to get a list of tables:
+
+.. image:: pythi2.png
+    :alt: Accordion
+    :width: 300
+    :height: 300
+    :align: center
+
+And how our clicked on table is automatically used to populate the form. Fill in the date and time range you want as YYYY-mm-dd HH:MM:SS.
+
+.. image:: pythi3.png
+    :alt: Form is populated
+    :width: 300
+    :height: 300
+    :align: center
+
+Click Submit Me at the bottom to submit the form and advance to the list of probes. Your submission went through if the button turns red.
+
+.. image:: pythi4.png
+    :alt: Probe form.
+    :width: 300
+    :height: 300
+    :align: center
+
+
+You can also choose a probe, and now your probe will populate the form.
+
+.. image:: pythi5.png
+    :alt: Probe form selection.
+    :width: 300
+    :height: 300
+    :align: center
+
+Type in a number of minutes that you want to GLITCH for. If you get a 500 error on the next page, you probably made a selection that was "out of range". I have not built in range checks. However, the server is persistent, so you can always go back and try again.
+
+Click Submit Me at the bottom to submit the form and advance to the list of probes. Your submission went through if the button turns red.
+
+.. image:: pythi6.png
+    :alt: some interval here.
+    :width: 300
+    :height: 300
+    :align: center
+
+
+Finally your data is returned as a nice looking comma separated html list.
+
+.. image:: pythi7.png
+    :alt: some interval here.
+    :width: 300
+    :height: 300
+    :align: center
+
+
+
+If you want to take shortcuts:
+
+* you can use the tag `/data/...` to use the old `[GET]` syntax from the cold fusion / perl program - your url would be `/data/dbcode=MS04311&entity=02` etc.
+
+* you can use the tage `/accordion` to load the main page. This is right now how you access on `localhost:8080/accordion`
 
 =======
 License
