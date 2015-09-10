@@ -43,16 +43,39 @@ Main Features
 Usage
 =====
 
+Emulate a local host environment within the firewall.
+
+* download ngrok
+* start an ngrok "emulation server"
+* point the server to port 8080:
+
+.. code-block:: bash
+    $ ./ngrok http 8080
+
+* copy that funky http:// ngrok.io address
+
 
 Start the application from the command line
 
+* use the standard 2.7 version of python
 
 .. code-block:: bash
 
     $ python glitch_bottle.py
 
 
-Point your web browser to your desired endpoint
+Point your web browser / cmd line to your desired endpoint:
+
+* ngrok 
+
+.. code-block:: curl http://ngrok.io/accordion
+
+* local host without ngrok
+
+.. code-block:: curl http://localhost:8080/accordion
+
+
+* if you are using the cold fusion api:
 
 .. code-block:: curl http://localhost:8080/dbcode=[5-character-code]&entity_num=[2-digit-entity]&probe_code=[8-character-probe-code]&start_date=[14-digit-date-integer]&end_date=[14-digit-date-integer]&interval=[integer-minutes-less-than-1440]
 
