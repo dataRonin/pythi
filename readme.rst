@@ -92,8 +92,13 @@ Discussion of the back-end integration here
 glitch_bottle.py
 =============
 
+The glitch interface is a simple set of accordion menus that look into the database and find the appropriate probes.
 
-Discussion of the web interface here
+.. image:: pythi1.png
+    :alt: Mr.T shuns bad science
+    :width: 500
+    :height: 500
+    :align: center
 
 
 =======
