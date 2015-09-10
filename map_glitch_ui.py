@@ -6,7 +6,6 @@ import itertools
 import sys
 from map_glitch_2 import connect
 
-
 def all_the_tables(cur, dbcode):
     """ gets all the possible tables for any given probe code"""
     sql = "select table_name from fsdbdata.information_schema.tables where table_name like \'" + dbcode + "%\' order by table_name asc"
@@ -32,6 +31,7 @@ def all_the_tables(cur, dbcode):
 
 def all_the_probes(seven_digit_db_code):
     """ gets all the probes for a given tablename """
+    
     _, cur = connect()
 
     tablename = str(seven_digit_db_code)
@@ -308,7 +308,7 @@ def accordion_probes(seven_digit_db_code, startdate, enddate):
     <h1>Choose a Probe</h1>
     <ul id="accordion" class="accordion">
         <li>
-            <div class="link"><i class="fa-line-chart"></i>Choose Probe<i class="fa fa-chevron-down"></i>
+            <div class="link"><i class="fa fa-line-chart"></i>Choose Probe<i class="fa fa-chevron-down"></i>
             </div>
             <ul class="submenu"> """ + new_names + """
 
@@ -336,9 +336,9 @@ def accordion_probes(seven_digit_db_code, startdate, enddate):
         this.el = el || {};
         this.multiple = multiple || false;
 
-        // Variables privadas
+        // Private Variables
         var links = this.el.find('.link');
-        // Evento
+        // Event
         links.on('click', {el: this.el, multiple: this.multiple}, this.dropdown)
     }
 
@@ -538,22 +538,26 @@ def accordion_table():
 
     .accordion li.default .submenu {display: block;}
 
-     button {
-            cursor: pointer;
-            background-color: #2d2c41;
-            color : white;
-            padding : 10px 10px 10px 10px;
-            margin: 10px;
-            border-box : 3px;
-            border-color: white;
-            width: 50%;
-            max-width: 300px;
-            margin: 30px auto 20px;
-            -webkit-border-radius: 4px;
-            -moz-border-radius: 4px;
-            border-radius: 4px;
-         }
-    /**
+    button {
+        cursor: pointer;
+        background-color: #2d2c41;
+        color : white;
+        padding : 10px 10px 10px 10px;
+        margin: 10px;
+        border-box : 3px;
+        border-color: white;
+        width: 50%;
+        max-width: 300px;
+        margin: 30px auto 20px;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        }
+
+    button:hover{
+        background-color: red;
+    }
+    /**---------------------------
      * Submenu
      -----------------------------*/
      .submenu {
@@ -602,23 +606,23 @@ def accordion_table():
     <h1>Choose a Database </h1>
     <ul id="accordion" class="accordion">
         <li>
-            <div class="link"><i class="fa fa-paint-brush"></i>MS001<i class="fa fa-chevron-down"></i></div>
+            <div class="link"><i class="fa fa-desktop"></i>MS001<i class="fa fa-chevron-down"></i></div>
             <ul class="submenu"> """ + list_of_new_names[0] + """
 
             </ul>
         </li>
         <li>
-            <div class="link"><i class="fa fa-code"></i>MS043<i class="fa fa-chevron-down"></i></div>
+            <div class="link"><i class="fa fa-cogs"></i>MS043<i class="fa fa-chevron-down"></i></div>
             <ul class="submenu"> """ + list_of_new_names[1] + """
             </ul>
         </li>
         <li>
-            <div class="link"><i class="fa fa-mobile"></i>MS005<i class="fa fa-chevron-down"></i></div>
+            <div class="link"><i class="fa fa-wrench"></i>MS005<i class="fa fa-chevron-down"></i></div>
             <ul class="submenu"> """ + list_of_new_names[2] + """
             </ul>
         </li>
         <li>
-            <div class="link"><i class="fa fa-mobile"></i>HT004<i class="fa fa-chevron-down"></i></div>
+            <div class="link"><i class="fa fa-tint"></i>HT004<i class="fa fa-chevron-down"></i></div>
             <ul class="submenu">""" + list_of_new_names[3] + """
             </ul>
         </li>

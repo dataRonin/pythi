@@ -214,6 +214,7 @@ def glitch_setup(valid_data, interval, output_from_mapg):
 
         windmag, winddir = create_glitch_windpro(res_multi[spdname], res_multi[dirname])
         
+
         # we only get "mag" from prop
         try:
             res_multi.update({magname : windmag})
@@ -222,24 +223,21 @@ def glitch_setup(valid_data, interval, output_from_mapg):
 
         res_multi.update({dirname : winddir})
 
+        # every key in the multiple items we want to loop over, except direction
         for each_key in res_multi.keys():
+
             try:
-                if dirname not in each_key or magname not in each_key:
-                    res2 = create_glitch(res,"NORMAL")
+                if spdname in each_key or airname in each_key or uxname in each_key or uyname in each_key:
+                    res2 = create_glitch(res_multi[each_key],"NORMAL")
                     res_multi.update({each_key:res2})
                 else:
                     pass
             except Exception:
-
-                if dirname not in each_key:
-                    res2 = create_glitch(res,"NORMAL")
-                    res_multi.update({each_key:res2})
-                else:
-                    pass
+                # direction and magnitude
+                pass
 
         returnable = bottle_many(res_multi)
-        #print res_multi
-        #import pdb; pdb.set_trace()
+        
         return returnable
 
     elif len(nc) >= 1 and is_tot(nc) != False:
@@ -576,7 +574,7 @@ def bottle_one(results):
 
     my_data = "".join(all_row) 
 
-    returnable = "<html><head><title>Your output from pyGLITCH</title></head><h1> Your output from pyGLITCH </h1></br><h5>pyGLITCH is under the Creative Commons Attribution Share-Alike version 3.0 License.</h5><body>DATE, MEAN, FLAG </br>" + my_data + "</body></html>"
+    returnable = "<html><head><title>Your outpdfdfadsfut from pyGLITCH</title></head><h1> Your output from pyGLITCH </h1></br><h5>pyGLITCH is under the Creative Commons Attribution Share-Alike version 3.0 License.</h5><body>DATE, MEAN, FLAG </br>" + my_data + "</body></html>"
 
     return returnable    
 
@@ -593,7 +591,8 @@ def bottle_many(results):
 
     all_row_2 = []
     #datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
-    
+
+
     for index, each_key in enumerate(names):
         num_indices = len(names)
     
@@ -647,8 +646,8 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
     
-    cnames = mg.gather_column_names(cursor,'MS00115')
-    o1 = mg.system_tables(cursor, 'MS00115', 'RADPRI01', cnames,'2014-05-03 00:00:00','2014-05-05 00:00:00')
+    cnames = mg.gather_column_names(cursor,'MS00134')
+    o1 = mg.system_tables(cursor, 'MS00134', 'WNDPRI02', cnames,'2014-04-03 00:00:00','2014-04-05 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 

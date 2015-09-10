@@ -65,11 +65,22 @@ advanced usage, and also features additional examples.*
 
 
 ===========
-map_glitch.py
+map_glitch_2.py
 ===========
 
-Discussion of the data mapper here
+Using god's gift to SQL, the information_schema structure, we execute this:
 
+.. code-block:: python
+
+    get_cnames = "select column_name from fsdbdata.information_schema.columns where table_name like \'" + table_name + "\' and column_name not like \'dbcode\' and column_name not like \'stcode\' and column_name not like \'entity\' and column_name not like \'format\' and column_name not like \'%method\' and column_name not like \'event_code\' and column_name not like \'%level\' and column_name not like \'sitecode\' and column_name not like \'height\' and column_name not like \'%depth\' and column_name not like \'max%\' and column_name not like \'min%\' and column_name not like \'%max%\' and column_name not like \'%min%\' and column_name not like \'%stddev\'"
+
+that's right, it's all the column names you'll ever need to do all the harmonization and aggregation. Subsequently, we "try" all of the four methods of combining Probe, Probe_code, Date, and Date_Time to get the appropriate information, like this:
+
+.. code-block:: python
+
+        sql = "select " + cnames_to_list + " from fsdbdata.dbo." + table_name + " where date >= \'" + startdate + "\' and date <= \'" + enddate +"\' and probe like \'" + probe_code +"\' order by date asc"
+
+This information is returned so that Glitching may occur.
 
 ===========
 pyGLITCH_backend.py

@@ -11,15 +11,15 @@ def index():
 
 @error(404)
 def error404(error):
-    return "This isn\'t the data you were looking for"
+    return "404 : This isn\'t the data you were looking for"
 
 @error(403)
 def error403(error):
-    return "Abandon all hope of getting this data."
+    return "403 : Abandon all hope of getting this data."
 
 @error(500)
 def error500(error):
-    return "Oh look, you\'ve gone and broken our webpage. Gee, thanks."
+    return "500 : Oh look, you\'ve gone and broken our webpage. Gee, thanks. You should probably check to be sure we measured that thing during the time you selected."
 
 @route('/<filename:re:.*\.js>')
 def javascripts(filename):
@@ -50,8 +50,6 @@ def links_to_probes():
     bigname = request.forms.get('menu-selection')
     pp = ui.all_the_probes(bigname)
     return_string = ui.accordion_probes(bigname, startdate, enddate)
-    # a list of probes!
-    # return_string = ui.html_probes_list(pp)
     return return_string
 
 # dbcode grabs the probe specifics based on the seven digit db code and gets the right data from the back end
@@ -64,12 +62,9 @@ def links_to_datas(dbcode):
     
     # the 7-digit code, like MS04312 etc.
     dbcode = dbcode
-    print dbcode
 
     # in minutes
     interval = request.forms.get('interval')
-    print startdate
-    print enddate
 
     date_error = "you must enter the date time as YYYY-MM-DD HH:MM:SS"
 
@@ -87,23 +82,15 @@ def links_to_datas(dbcode):
         code = str(dbcode[0:5])
         entity = str(dbcode[5:7])
 
-    # jquery is messed up. why?
-    print pc
-    print code
-    print entity
-    print start_date_string
-    print end_date_string
-    print interval
-
     returning_html = pgb.simple_glitch(code, entity, pc, start_date_string, end_date_string, interval)
-    print returning_html
     return returning_html
 
 @route('/data/<long_string>')
 def printname(long_string):
     """
     Parse incoming string using basic Python string operations
-    THIS IS THE METHOD YOU SHOULD USE IF YOU ARE RUNNING THIS AS HANS IN THE Cold Fusion Template
+    This method is for hans to use when he incorporates it into the Cold Fusion
+    It is not part of PYTHI. If you deleted it, PYTHI would not care.
     """
     parsed = long_string.split("&")
     code = parsed[0].lstrip("dbcode=")
@@ -126,12 +113,9 @@ def printname(long_string):
 
     returning_string = "You have chosen " + pc + " from table " + table_name + " which " + printable + " and aggregates for " + interval + " minutes!"
 
-    #print(code, entity, pc, start_date_string, end_date_string, interval)
 
     returning_html = pgb.simple_glitch(code, entity, pc, start_date_string, end_date_string, interval)
-    #print returning_html
-    
-    print returning_html
+
     return returning_html
 
 run(host='localhost', port=8080)
