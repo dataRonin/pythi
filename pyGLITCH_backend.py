@@ -1,4 +1,3 @@
-#!usr/bin/python
 import csv
 import pymssql
 import time
@@ -127,7 +126,7 @@ def is_tot(numeric_cols):
         return False
 
 
-def glitch_setup(valid_data, interval, output_from_mapg):
+def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_code):
     """ set up the system for glitch"""
 
     # create a list of dates from output of the map - not an iterator!
@@ -153,7 +152,7 @@ def glitch_setup(valid_data, interval, output_from_mapg):
         flags = valid_data[fc[0]]
         res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"TOTAL")
         res2 = create_glitch(res, "TOTAL")
-        returnable = bottle_one(res2)
+        returnable = bottle_one(res2, dbcode, entity, probe_code)
         return returnable
 
     # if the numeric data is one column and it's not total, then we use the normal glitch
@@ -164,13 +163,13 @@ def glitch_setup(valid_data, interval, output_from_mapg):
 
         res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"NORMAL")
         res2 = create_glitch(res,"NORMAL")
-        returnable = bottle_one(res2)
+        returnable = bottle_one(res2, dbcode, entity, probe_code)
         return returnable
 
     # if the numeric data is more than one column and it's all not total, we will use one of the windy methods
     elif len(nc) >= 1 and is_tot(nc)== False:
         print("need to use the advanced methods for winds.")
-
+        print nc
         res_multi = {}
 
         if len(nc) <= 4:
@@ -236,7 +235,7 @@ def glitch_setup(valid_data, interval, output_from_mapg):
                 # direction and magnitude
                 pass
 
-        returnable = bottle_many(res_multi)
+        returnable = bottle_many(res_multi, dbcode, entity, probe_code)
         
         return returnable
 
@@ -275,7 +274,7 @@ def glitch_setup(valid_data, interval, output_from_mapg):
 
         #print res_multi
         #import pdb; pdb.set_trace()
-        returnable = bottle_many(res_multi)
+        returnable = bottle_many(res_multi, dbcode, entity, probe_code)
         return returnable
 
 def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
@@ -558,7 +557,7 @@ def create_glitch_windpro(results1, results2):
     #print final_glitch_mag, final_glitch_dir
     return final_glitch_mag, final_glitch_dir
 
-def bottle_one(results):
+def bottle_one(results, dbcode, entity, probe_code):
 
     dates = sorted(results.keys())
     values = [str(results[x]['mean']) for x in dates]
@@ -566,19 +565,22 @@ def bottle_one(results):
     datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
 
     all_row = []
+
+    nice_code = str(dbcode) + str(entity)
     
     for index, item in enumerate(datestrings):
-      new_row = [item, flags[index], values[index], "</br>"]
+      new_row = [nice_code, probe_code, item, flags[index], values[index]]
       nr = ", ".join(new_row)
-      all_row.append(nr)
+      nr_1 = "<tr><td>" + nr[0:]
+      all_row.append(nr_1)
 
     my_data = "".join(all_row) 
 
-    returnable = "<html><head><title>Your outpdfdfadsfut from pyGLITCH</title></head><h1> Your output from pyGLITCH </h1></br><h5>pyGLITCH is under the Creative Commons Attribution Share-Alike version 3.0 License.</h5><body>DATE, MEAN, FLAG </br>" + my_data + "</body></html>"
+    returnable = "<html><title>PYTHI - Python Time-Series Harmonization and Integration</title><head></head><body><table><th>DBCODE, PROBE_CODE, DATE_TIME, MEAN, FLAG</th>" + my_data + "</table></body></html>"
 
     return returnable    
 
-def bottle_many(results):
+def bottle_many(results, dbcode, entity, probe_code):
 
     names = results.keys()
 
@@ -593,6 +595,8 @@ def bottle_many(results):
     #datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
 
 
+    nice_code = str(dbcode) + str(entity)
+
     for index, each_key in enumerate(names):
         num_indices = len(names)
     
@@ -606,7 +610,7 @@ def bottle_many(results):
                 all_row[each_date].append(str(results[each_key][each_date]['flags']))
 
                 if index == num_indices - 1:
-                    all_row[each_date].append("</br>")
+                    all_row[each_date].append("</td></tr>")
                 else: 
                     pass
 
@@ -614,11 +618,12 @@ def bottle_many(results):
     for each_item in sorted(all_row.keys()):
          
         nr = ", ".join(all_row[each_item])
-        all_row_2.append(nr)
+        nr_1 = "<tr><td>" + nice_code + "," + probe_code + "," + nr
+        all_row_2.append(nr_1)
 
         my_data = "".join(all_row_2) 
 
-    returnable = "<html><head><title>Your output from pyGLITCH</title></head><h1> Your output from pyGLITCH </h1></br><h5>pyGLITCH is under the Creative Commons Attribution Share-Alike version 3.0 License.</h5><body><b>DATE, " + title_string + "</b></br>" + my_data + "</body></html>"
+    returnable = "<html><title>PYTHI - Python Time-Series Harmonization and Integration</title><head></head><body><table><th>DBCODE, PROBE_CODE, DATE_TIME," + title_string + "</th>" + my_data + "</table></body></html>"
 
     return returnable 
        
@@ -638,7 +643,7 @@ def simple_glitch(dbcode, entity, probe_code, start_date, end_date, interval):
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_html = glitch_setup(vd, int(interval), o1)
+    returned_html = glitch_setup(vd, int(interval), o1, dbcode, entity, probe_code)
 
     return returned_html
 
@@ -657,6 +662,6 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 45, o1)
+    returned_value = glitch_setup(vd, 45, o1, 'MS001','34','WNDPRI02')
 
     print returned_value
