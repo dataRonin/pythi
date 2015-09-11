@@ -565,11 +565,9 @@ def bottle_one(results, dbcode, entity, probe_code):
     datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
 
     all_row = []
-
-    nice_code = str(dbcode) + str(entity)
     
     for index, item in enumerate(datestrings):
-      new_row = [nice_code, probe_code, item, flags[index], values[index]]
+      new_row = [str(dbcode), str(entity), probe_code, item, flags[index], values[index]]
       nr = ", ".join(new_row)
       nr_1 = "<tr><td>" + nr[0:]
       all_row.append(nr_1)
@@ -595,8 +593,6 @@ def bottle_many(results, dbcode, entity, probe_code):
     #datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
 
 
-    nice_code = str(dbcode) + str(entity)
-
     for index, each_key in enumerate(names):
         num_indices = len(names)
     
@@ -618,7 +614,7 @@ def bottle_many(results, dbcode, entity, probe_code):
     for each_item in sorted(all_row.keys()):
          
         nr = ", ".join(all_row[each_item])
-        nr_1 = "<tr><td>" + nice_code + "," + probe_code + "," + nr
+        nr_1 = "<tr><td>" + str(dbcode) + "," + str(entity) + "," + probe_code + "," + nr
         all_row_2.append(nr_1)
 
         my_data = "".join(all_row_2) 
