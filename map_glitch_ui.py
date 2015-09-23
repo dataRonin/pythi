@@ -31,7 +31,10 @@ def all_the_tables(cur, dbcode):
     return new_names
 
 def all_the_probes(seven_digit_db_code):
-    """ gets all the probes for a given tablename """
+    """ Gets all the probes for a given tablename 
+
+    :seven_digit_db_code: The long dbcode + entity (MS04314), sometimes also called table_name
+    """
     
     _, cur = connect()
 
@@ -58,7 +61,7 @@ def all_the_probes(seven_digit_db_code):
     return possible_probes
 
 def html_probes_list(possible_probes):
-    """ make the html probes into a list of probes - old method"""
+    """ Make the html probes into a list of probes - old method"""
 
     starting_string = "<ul>"
     ending_string = "</ul>"
@@ -77,7 +80,7 @@ def html_probes_list(possible_probes):
     return final_list_as_string
 
 def accordion_probes(seven_digit_db_code, startdate, enddate):
-    """ generate nice interface for probes - one big table that can be clicked on for each probe"""
+    """ Generate nice interface for probes - one big table that can be clicked on for each probe"""
 
     _,cur = connect()
 
@@ -374,7 +377,10 @@ def accordion_probes(seven_digit_db_code, startdate, enddate):
     return huge_string
 
 def accordion_table():
+    """ Makes another lovely table for the possible entities in one of these databases
 
+    .. note :: This is where you can add in new databases!
+    """
     _,cur = connect()
 
     list_of_new_names = []
