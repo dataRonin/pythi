@@ -7,7 +7,9 @@ import map_glitch_ui as ui
 
 @route('/')
 def index():
-    return "<h1>Choose you a Probe for Great Good!</h1>"
+    """ Basic route to hit if you just go to the index page
+    """
+    return "<h1>Choose you a Probe for Great Good!</h1><p> Use the route ending in accordion to access the CSS method or the route ending in data to use the POST method</p>"
 
 @error(404)
 def error404(error):

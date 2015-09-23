@@ -13,6 +13,7 @@ def all_the_tables(cur, dbcode):
     names_of_tables = []
     cur.execute(sql)
 
+    # in this loop, specify which "tables" you don't want to use - can be from any db.
     for row in cur:
         tn = str(row[0])
         if tn[-2:-1] =='0':
@@ -92,6 +93,7 @@ def accordion_probes(seven_digit_db_code, startdate, enddate):
 
     new_names = "".join(pp_list)
 
+    # this giant string is the HTML which is generated
     huge_string = """
     <!doctype html>
     <html lang="en">
@@ -377,6 +379,7 @@ def accordion_table():
 
     list_of_new_names = []
 
+    # this is where you could add a new table, like CF012
     for each_table in ['MS001','MS043','MS005','HT004']:
 
         nn = all_the_tables(cur, each_table)

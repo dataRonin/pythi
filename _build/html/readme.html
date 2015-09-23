@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PYTHI : PYthon-based Time Harmonizer and Integrator &mdash; PYTHI 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PYTHI 1.0 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">PYTHI 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pythi-python-based-time-harmonizer-and-integrator">
+<h1>PYTHI : PYthon-based Time Harmonizer and Integrator<a class="headerlink" href="#pythi-python-based-time-harmonizer-and-integrator" title="Permalink to this headline">¶</a></h1>
+<p>PYTHI (pronounced <em>pith-thee</em>) is a <strong>bottle-backed time aggregator</strong>.  Its
+goal is to make possible all the functionality of <strong>GLITCH</strong> without relying on reference tables or CGI scripts. Operating under the wonderful WSGI protocols, PYTHI is <strong>faster</strong> and <strong>more flexible</strong> than <strong>GLITCH</strong> (rip: 2014). It provides a simple <code class="docutils literal"><span class="pre">http</span></code> based API that can be nested into the <strong>GLITCH</strong> <code class="docutils literal"><span class="pre">[GET]</span></code> syntax, or it can be called independently to respond to arbitrary HTTP requests by displaying html output. PYTHI can be used for <strong>MS001, MS043 and testing is being conducted on MS005 and HT004</strong>.</p>
+<a class="reference internal image-reference" href="http://i.imgur.com/1mBoSxy.jpg"><img alt="Mr.T shuns bad science" class="align-center" src="http://i.imgur.com/1mBoSxy.jpg" style="width: 500px; height: 500px;" /></a>
+<p>PYTHI is written in Python, (v. 2.7.10) and under the hood it needs the
+<a href="#id8"><span class="problematic" id="id9">`Bottle`_</span></a> and <a href="#id10"><span class="problematic" id="id11">`Pymssql`_</span></a> libraries.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#main-features" id="id2">Main Features</a></li>
+<li><a class="reference internal" href="#usage" id="id3">Usage</a></li>
+<li><a class="reference internal" href="#map-glitch-2-py" id="id4">map_glitch_2.py</a></li>
+<li><a class="reference internal" href="#pyglitch-backend-py" id="id5">pyGLITCH_backend.py</a></li>
+<li><a class="reference internal" href="#glitch-bottle-py" id="id6">glitch_bottle.py</a></li>
+<li><a class="reference internal" href="#license" id="id7">License</a></li>
+</ul>
+</div>
+<div class="section" id="main-features">
+<h2>Main Features<a class="headerlink" href="#main-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Supports <code class="docutils literal"><span class="pre">[GET]</span></code> request syntax used by Perl CGI scripts and &#8220;Cold Fusion&#8221;</li>
+<li>Formatted, simple output can be easily copied into a .csv</li>
+<li>Does not need reference tables</li>
+<li>Authorization to the SQL-server using read-only authentication</li>
+<li>Open-Source and easy to read and work with</li>
+<li>Fails by throwing boolean falses to prevent bad data escaping</li>
+<li>Supports Python 2.7, which is commonly used by scientists</li>
+<li>Linux, Mac OS X ... and Windows?</li>
+<li>Documentation</li>
+<li>Octocat is the best.</li>
+</ul>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Emulate a local host environment within the firewall.</p>
+<ul class="simple">
+<li>download ngrok</li>
+<li>start an ngrok &#8220;emulation server&#8221;</li>
+<li>point the server to port 8080:</li>
+</ul>
+<ul class="simple">
+<li>copy that funky <a class="reference external" href="http://">http://</a> ngrok.io address</li>
+</ul>
+<p>Start the application from the command line</p>
+<ul class="simple">
+<li>use the standard 2.7 version of python</li>
+</ul>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python glitch_bottle.py
+</pre></div>
+</div>
+<p>Point your web browser / cmd line to your desired endpoint:</p>
+<ul class="simple">
+<li>ngrok</li>
+</ul>
+<ul class="simple">
+<li>local host without ngrok</li>
+</ul>
+<ul class="simple">
+<li>if you are using the cold fusion api:</li>
+</ul>
+<hr class="docutils" />
+<p><em>What follows is a detailed documentation. It covers the command syntax,
+advanced usage, and also features additional examples.</em></p>
+</div>
+<div class="section" id="map-glitch-2-py">
+<h2>map_glitch_2.py<a class="headerlink" href="#map-glitch-2-py" title="Permalink to this headline">¶</a></h2>
+<p>Using god&#8217;s gift to SQL, the information_schema structure, we execute this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">get_cnames</span> <span class="o">=</span> <span class="s">&quot;select column_name from fsdbdata.information_schema.columns where table_name like </span><span class="se">\&#39;</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">table_name</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">dbcode</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">stcode</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">entity</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">format</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">%method</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">event_code</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="si">%le</span><span class="s">vel</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">sitecode</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">height</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="si">%d</span><span class="s">epth</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">max%</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">min%</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">%max%</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="s">%min%</span><span class="se">\&#39;</span><span class="s"> and column_name not like </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">tddev</span><span class="se">\&#39;</span><span class="s">&quot;</span>
+</pre></div>
+</div>
+<p>that&#8217;s right, it&#8217;s all the column names you&#8217;ll ever need to do all the harmonization and aggregation. Subsequently, we &#8220;try&#8221; all of the four methods of combining Probe, Probe_code, Date, and Date_Time to get the appropriate information, like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sql</span> <span class="o">=</span> <span class="s">&quot;select &quot;</span> <span class="o">+</span> <span class="n">cnames_to_list</span> <span class="o">+</span> <span class="s">&quot; from fsdbdata.dbo.&quot;</span> <span class="o">+</span> <span class="n">table_name</span> <span class="o">+</span> <span class="s">&quot; where date &gt;= </span><span class="se">\&#39;</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">startdate</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\&#39;</span><span class="s"> and date &lt;= </span><span class="se">\&#39;</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">enddate</span> <span class="o">+</span><span class="s">&quot;</span><span class="se">\&#39;</span><span class="s"> and probe like </span><span class="se">\&#39;</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">probe_code</span> <span class="o">+</span><span class="s">&quot;</span><span class="se">\&#39;</span><span class="s"> order by date asc&quot;</span>
+</pre></div>
+</div>
+<p>This information is returned so that Glitching may occur.</p>
+</div>
+<div class="section" id="pyglitch-backend-py">
+<h2>pyGLITCH_backend.py<a class="headerlink" href="#pyglitch-backend-py" title="Permalink to this headline">¶</a></h2>
+<p>Discussion of the back-end integration here</p>
+</div>
+<div class="section" id="glitch-bottle-py">
+<h2>glitch_bottle.py<a class="headerlink" href="#glitch-bottle-py" title="Permalink to this headline">¶</a></h2>
+<p>The glitch interface is a simple set of accordion menus that look into the database and find the appropriate tables and probes.</p>
+<a class="reference internal image-reference" href="_images/pythi1.png"><img alt="Entry portal" class="align-center" src="_images/pythi1.png" style="width: 300px; height: 300px;" /></a>
+<p>You can see here how we drop down from MS001 to get a list of tables:</p>
+<a class="reference internal image-reference" href="_images/pythi2.png"><img alt="Accordion" class="align-center" src="_images/pythi2.png" style="width: 300px; height: 300px;" /></a>
+<p>And how our clicked on table is automatically used to populate the form. Fill in the date and time range you want as YYYY-mm-dd HH:MM:SS.</p>
+<a class="reference internal image-reference" href="_images/pythi3.png"><img alt="Form is populated" class="align-center" src="_images/pythi3.png" style="width: 300px; height: 300px;" /></a>
+<p>Click Submit Me at the bottom to submit the form and advance to the list of probes. Your submission went through if the button turns red.</p>
+<a class="reference internal image-reference" href="_images/pythi4.png"><img alt="Probe form." class="align-center" src="_images/pythi4.png" style="width: 300px; height: 300px;" /></a>
+<p>You can also choose a probe, and now your probe will populate the form.</p>
+<a class="reference internal image-reference" href="_images/pythi5.png"><img alt="Probe form selection." class="align-center" src="_images/pythi5.png" style="width: 300px; height: 300px;" /></a>
+<p>Type in a number of minutes that you want to GLITCH for. If you get a 500 error on the next page, you probably made a selection that was &#8220;out of range&#8221;. I have not built in range checks. However, the server is persistent, so you can always go back and try again.</p>
+<p>Click Submit Me at the bottom to submit the form and advance to the list of probes. Your submission went through if the button turns red.</p>
+<a class="reference internal image-reference" href="_images/pythi6.png"><img alt="some interval here." class="align-center" src="_images/pythi6.png" style="width: 300px; height: 300px;" /></a>
+<p>Finally your data is returned as a nice looking comma separated html list.</p>
+<a class="reference internal image-reference" href="_images/pythi7.png"><img alt="some interval here." class="align-center" src="_images/pythi7.png" style="width: 300px; height: 300px;" /></a>
+<p>If you want to take shortcuts:</p>
+<ul class="simple">
+<li>you can use the tag <cite>/data/...</cite> to use the old <cite>[GET]</cite> syntax from the cold fusion / perl program - your url would be <cite>/data/dbcode=MS04311&amp;entity=02</cite> etc.</li>
+<li>you can use the tage <cite>/accordion</cite> to load the main page. This is right now how you access on <cite>localhost:8080/accordion</cite></li>
+</ul>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>Please see <a class="reference external" href="http://creativecommons.org/licenses/by-sa/3.0/">LICENSE</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PYTHI : PYthon-based Time Harmonizer and Integrator</a><ul>
+<li><a class="reference internal" href="#main-features">Main Features</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#map-glitch-2-py">map_glitch_2.py</a></li>
+<li><a class="reference internal" href="#pyglitch-backend-py">pyGLITCH_backend.py</a></li>
+<li><a class="reference internal" href="#glitch-bottle-py">glitch_bottle.py</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/readme.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Fox Peterson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/readme.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

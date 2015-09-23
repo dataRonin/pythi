@@ -7,23 +7,30 @@ import sys
 import math
 import map_glitch_2 as mg
 
-# def connect():
-#     ''' connect to the fsdbdata database'''
+""" pyGLITCH_backend.py controls the backend logic for doing the glitch on time series data. 
 
-#     conn = pymssql.connect(server = 'stewartia.forestry.oregonstate.edu:1433', user='ltermeta', password='$CFdb4LterWeb!')
-#     cursor = conn.cursor()
-
-#     return conn, cursor
+Modifications to :mod:pyGLITCH_backend are the fastest way to make extensible the glitching.
+"""
 
 def drange(start, stop, step):
-  ''' returns a date range generator '''
+  """ Returns a date range generator 
+
+  :start: date time to start, in YYYY-mm-dd HH:MM:SS
+  :end: date time to end, in YYYY-mm-dd HH:MM:SS
+  :step: interval, in integer minutes
+  """
   r = start
   while r < stop:
       yield r
       r += step
 
 def create_date_list_from_mapg(output_from_mapg):
-    """Get all dates where we have valid data to key from"""
+    """Get all dates where we have valid data to key from
+
+    :output_from_mapg: a dictionary which contains the start and end dates to glitch, as well as the column names to get the glitch from.
+
+    .. warning :: if the function fails here, try specifying the internal variable "word" to match the date-time word in the data. Also, you might want to change the date-time format. The official Python documentation contains a massive list of these formats (python.com).
+    """
 
     try:
         word = 'DATE_TIME'
@@ -49,11 +56,15 @@ def create_date_list_from_mapg(output_from_mapg):
                     dr_1 = output_from_mapg[word]
                     dr = [datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S') for x in dr_1]
                 except Exception:
-                    print "please specify the date time columns name"
+                    print("please specify the date time column's name or format explicitly in pyGLITCH_backend")
                     return False
 
 def create_date_bounds_from_date_list(dr,interval):
-    """ creates date bounds from date list"""
+    """ Creates date bounds from the list of dates found in the given range. 
+
+    :dr: the date range list from the dates found from SQL server in form YYYY-mm-dd HH:MM:SS
+    :interval: the number of minutes over which to glitch.
+    """
 
     if dr == False:
         return False
@@ -71,7 +82,12 @@ def create_date_bounds_from_date_list(dr,interval):
     return first_date, last_date
 
 def to_dated_dictionary(output_from_mapg, *dr):
-    """create a data dictionary containing the data columns which are needed to make the outputs from glitch"""
+    """Create a data dictionary containing the data columns which are needed to make the outputs from glitch
+
+    The columns that are ordinal (date, probename) are logically separated from the mathematical.
+
+    :output_from_mapg: the original data mapping to the sql server which contains all possible columns. 
+    """
 
     try:
         dr
@@ -98,7 +114,11 @@ def to_dated_dictionary(output_from_mapg, *dr):
     return valid_data
 
 def numeric_or_flag(valid_data):
-    """ determine if the data in the valid data is numeric or flag """
+    """ determine if the data in the valid data is numeric or flag 
+
+    Some of the incoming data is numerical and some is flag. We can detect which is which based on whether or not that data is a string or a number by trying to do math with it
+    """
+    
     numeric_cols = []
     flag_cols = []
 

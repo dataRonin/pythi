@@ -1,0 +1,388 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to PYTHI’s documentation! &mdash; PYTHI 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PYTHI 1.0 documentation" href="#" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">PYTHI 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-pythi-s-documentation">
+<h1>Welcome to PYTHI&#8217;s documentation!<a class="headerlink" href="#welcome-to-pythi-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>PYTHI is a new version of GLITCH designed to operate using the Python Bottle framework. It is complient with only Python 2.0 currently. PYTHI serves its data on localhost, port 8080. This can be modified in the module named <cite>glitch_bottle</cite>. See the documents below.</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-pyGLITCH_backend"></span><dl class="function">
+<dt id="pyGLITCH_backend.bottle_many">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">bottle_many</code><span class="sig-paren">(</span><em>results</em>, <em>dbcode</em>, <em>entity</em>, <em>probe_code</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.bottle_many" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.bottle_one">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">bottle_one</code><span class="sig-paren">(</span><em>results</em>, <em>dbcode</em>, <em>entity</em>, <em>probe_code</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.bottle_one" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.create_date_bounds_from_date_list">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">create_date_bounds_from_date_list</code><span class="sig-paren">(</span><em>dr</em>, <em>interval</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.create_date_bounds_from_date_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates date bounds from the list of dates found in the given range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Dr:</th><td class="field-body">the date range list from the dates found from SQL server in form YYYY-mm-dd HH:MM:SS</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Interval:</th><td class="field-body">the number of minutes over which to glitch.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.create_date_list_from_mapg">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">create_date_list_from_mapg</code><span class="sig-paren">(</span><em>output_from_mapg</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.create_date_list_from_mapg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all dates where we have valid data to key from</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Output_from_mapg:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">a dictionary which contains the start and end dates to glitch, as well as the column names to get the glitch from.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">if the function fails here, try specifying the internal variable &#8220;word&#8221; to match the date-time word in the data. Also, you might want to change the date-time format. The official Python documentation contains a massive list of these formats (python.com).</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.create_glitch">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">create_glitch</code><span class="sig-paren">(</span><em>results</em>, <em>method</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.create_glitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time to make the right glitches</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.create_glitch_windpro">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">create_glitch_windpro</code><span class="sig-paren">(</span><em>results1</em>, <em>results2</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.create_glitch_windpro" title="Permalink to this definition">¶</a></dt>
+<dd><p>from the speed we get the x and y components for each direction for the magnitude
+then we add these up over the course of the glitch and take the sqrt
+we also do the wind direction here</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.drange">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">drange</code><span class="sig-paren">(</span><em>start</em>, <em>stop</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.drange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a date range generator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Start:</th><td class="field-body">date time to start, in YYYY-mm-dd HH:MM:SS</td>
+</tr>
+<tr class="field-even field"><th class="field-name">End:</th><td class="field-body">date time to end, in YYYY-mm-dd HH:MM:SS</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Step:</th><td class="field-body">interval, in integer minutes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.glitch">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">glitch</code><span class="sig-paren">(</span><em>dr</em>, <em>super_iterator</em>, <em>one_minute_iterator</em>, <em>data</em>, <em>flags</em>, <em>method</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.glitch" title="Permalink to this definition">¶</a></dt>
+<dd><p>iterating over one data and its flags.
+super_iterator is the ideal interval,
+one_minute_iterator is the one minute interval</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.glitch_setup">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">glitch_setup</code><span class="sig-paren">(</span><em>valid_data</em>, <em>interval</em>, <em>output_from_mapg</em>, <em>dbcode</em>, <em>entity</em>, <em>probe_code</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.glitch_setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>set up the system for glitch</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.is_tot">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">is_tot</code><span class="sig-paren">(</span><em>numeric_cols</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.is_tot" title="Permalink to this definition">¶</a></dt>
+<dd><p>if the column is a total return fase</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.numeric_or_flag">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">numeric_or_flag</code><span class="sig-paren">(</span><em>valid_data</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.numeric_or_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>determine if the data in the valid data is numeric or flag</p>
+<p>Some of the incoming data is numerical and some is flag. We can detect which is which based on whether or not that data is a string or a number by trying to do math with it</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.simple_glitch">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">simple_glitch</code><span class="sig-paren">(</span><em>dbcode</em>, <em>entity</em>, <em>probe_code</em>, <em>start_date</em>, <em>end_date</em>, <em>interval</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.simple_glitch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyGLITCH_backend.to_dated_dictionary">
+<code class="descclassname">pyGLITCH_backend.</code><code class="descname">to_dated_dictionary</code><span class="sig-paren">(</span><em>output_from_mapg</em>, <em>*dr</em><span class="sig-paren">)</span><a class="headerlink" href="#pyGLITCH_backend.to_dated_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a data dictionary containing the data columns which are needed to make the outputs from glitch</p>
+<p>The columns that are ordinal (date, probename) are logically separated from the mathematical.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Output_from_mapg:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">the original data mapping to the sql server which contains all possible columns.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-map_glitch_2"></span><dl class="function">
+<dt id="map_glitch_2.connect">
+<code class="descclassname">map_glitch_2.</code><code class="descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_2.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the fsdbdata database - read only access</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The connection parameters are nested in this function. It is a read only user of &#8216;ltermeta&#8217;.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="map_glitch_2.gather_column_names">
+<code class="descclassname">map_glitch_2.</code><code class="descname">gather_column_names</code><span class="sig-paren">(</span><em>cursor</em>, <em>table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_2.gather_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the available column names</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Cursor:</th><td class="field-body">the pymssql cursor created by <a class="reference internal" href="#map_glitch_2.connect" title="map_glitch_2.connect"><code class="xref py py-func docutils literal"><span class="pre">connect()</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Table_name:</th><td class="field-body">an FSBDDATA table, as specified in <a class="reference internal" href="#module-map_glitch_ui" title="map_glitch_ui"><code class="xref py py-mod docutils literal"><span class="pre">map_glitch_ui</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="map_glitch_2.system_tables">
+<code class="descclassname">map_glitch_2.</code><code class="descname">system_tables</code><span class="sig-paren">(</span><em>cursor</em>, <em>table_name</em>, <em>probe_code</em>, <em>cnames</em>, <em>startdate</em>, <em>enddate</em><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_2.system_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Figures out the names of the columns in your selected table, as well as what the PROBE is called, and orders them in a way that the glitcher can understand.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">if you add new tables or columns, you&#8217;ll want to obey the conventions taht the word for the PROBE should contain the word &#8220;probe&#8221; and the word for the &#8220;date&#8221; should contain the word &#8220;date&#8221;. If this is not the case, you&#8217;ll need to add an extra sql statement here like this example below, either by using the word &#8220;probe_code&#8221; as a variable with the new name inserted, or by simply fixing the string</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">probe_code</span> <span class="o">=</span> <span class="s">&#39;my_new_name_for_probe_code&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_sql_statement</span> <span class="o">=</span> <span class="s">&quot;select &quot;</span> <span class="o">+</span> <span class="n">cnames_to_list</span> <span class="o">+</span> <span class="s">&quot; from fsdbdata.dbo.&quot;</span> <span class="o">+</span> <span class="n">table_name</span> <span class="o">+</span> <span class="s">&quot; where date_time &gt;= &#39;&quot;</span> <span class="o">+</span> <span class="n">startdate</span> <span class="o">+</span> <span class="s">&quot;&#39; and date_time &lt;= &#39;&quot;</span> <span class="o">+</span> <span class="n">enddate</span> <span class="o">+</span><span class="s">&quot;&#39; and &quot;</span> <span class="o">+</span> <span class="n">probe_code</span> <span class="o">+</span> <span class="s">&quot;like &#39;&quot;</span> <span class="o">+</span> <span class="n">probe_code</span> <span class="o">+</span><span class="s">&quot;&#39; order by date_time asc&quot;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Table_name:</th><td class="field-body">an FSDBDATA table, like MS04310</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Probe_code:</th><td class="field-body">the name of a probe, like AIRCEN01</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Cnames:</th><td class="field-body">the column names, created by <a class="reference internal" href="#map_glitch_2.gather_column_names" title="map_glitch_2.gather_column_names"><code class="xref py py-func docutils literal"><span class="pre">gather_column_names()</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-glitch_bottle"></span><dl class="function">
+<dt id="glitch_bottle.error403">
+<code class="descclassname">glitch_bottle.</code><code class="descname">error403</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.error403" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.error404">
+<code class="descclassname">glitch_bottle.</code><code class="descname">error404</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.error404" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.error500">
+<code class="descclassname">glitch_bottle.</code><code class="descname">error500</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.error500" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.generate_accordion">
+<code class="descclassname">glitch_bottle.</code><code class="descname">generate_accordion</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.generate_accordion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.images">
+<code class="descclassname">glitch_bottle.</code><code class="descname">images</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.images" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.index">
+<code class="descclassname">glitch_bottle.</code><code class="descname">index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Basic route to hit if you just go to the index page</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.javascripts">
+<code class="descclassname">glitch_bottle.</code><code class="descname">javascripts</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.javascripts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.links_to_datas">
+<code class="descclassname">glitch_bottle.</code><code class="descname">links_to_datas</code><span class="sig-paren">(</span><em>dbcode</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.links_to_datas" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes the input from the probes menu and sends it to the back end</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.links_to_probes">
+<code class="descclassname">glitch_bottle.</code><code class="descname">links_to_probes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.links_to_probes" title="Permalink to this definition">¶</a></dt>
+<dd><p>creates links to generate urls with probe names from selection</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.printname">
+<code class="descclassname">glitch_bottle.</code><code class="descname">printname</code><span class="sig-paren">(</span><em>long_string</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.printname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse incoming string using basic Python string operations
+This method is for hans to use when he incorporates it into the Cold Fusion
+It is not part of PYTHI. If you deleted it, PYTHI would not care.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="glitch_bottle.stylesheets">
+<code class="descclassname">glitch_bottle.</code><code class="descname">stylesheets</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#glitch_bottle.stylesheets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-map_glitch_ui"></span><dl class="function">
+<dt id="map_glitch_ui.accordion_probes">
+<code class="descclassname">map_glitch_ui.</code><code class="descname">accordion_probes</code><span class="sig-paren">(</span><em>seven_digit_db_code</em>, <em>startdate</em>, <em>enddate</em><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_ui.accordion_probes" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate nice interface for probes - one big table that can be clicked on for each probe</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="map_glitch_ui.accordion_table">
+<code class="descclassname">map_glitch_ui.</code><code class="descname">accordion_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_ui.accordion_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="map_glitch_ui.all_the_probes">
+<code class="descclassname">map_glitch_ui.</code><code class="descname">all_the_probes</code><span class="sig-paren">(</span><em>seven_digit_db_code</em><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_ui.all_the_probes" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets all the probes for a given tablename</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="map_glitch_ui.all_the_tables">
+<code class="descclassname">map_glitch_ui.</code><code class="descname">all_the_tables</code><span class="sig-paren">(</span><em>cur</em>, <em>dbcode</em><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_ui.all_the_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets all the possible tables for any given probe code</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="map_glitch_ui.html_probes_list">
+<code class="descclassname">map_glitch_ui.</code><code class="descname">html_probes_list</code><span class="sig-paren">(</span><em>possible_probes</em><span class="sig-paren">)</span><a class="headerlink" href="#map_glitch_ui.html_probes_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>make the html probes into a list of probes - old method</p>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to PYTHI&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Fox Peterson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
