@@ -500,18 +500,36 @@ def create_glitch_windpro(results1, results2):
             else:
                 pass
 
-            ypart = (sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)**2
-            
-            xpart = (sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)**2
+            try:
+                ypart = (sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)**2
+            except Exception:
+                ypart = None
 
-            glitched_mag = math.sqrt(ypart + xpart)
+            try:
+                xpart = (sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)**2
+            except Exception:
+                xpart = None
 
-            theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)
-            
-            glitched_dir = round(math.degrees(theta_u),3)
+            try:
+                glitched_mag = math.sqrt(ypart + xpart)
+            except Exception:
+                glitched_mag = None
 
-            if glitched_dir < 0.:
-                glitched_dir = 360+glitched_dir
+            try: 
+                theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)
+            except Exception:
+                glitched_dir = None
+
+            try:
+                glitched_dir = round(math.degrees(theta_u),3)
+            except Exception:
+                glitched_dir = None
+
+            try:
+                if glitched_dir < 0.:
+                    glitched_dir = 360+glitched_dir
+            except Exception:
+                glitched_dir = None
 
             try:
                 num_flags = len(results1[each_glitch]['fval'])
@@ -522,6 +540,12 @@ def create_glitch_windpro(results1, results2):
 
                     glitched_mag_flag = 'A'
                     glitched_dir_flag = 'A'
+
+                elif glitched_mag == None:
+                    glitched_mag_flag = 'M'
+
+                elif glitched_dir == None:
+                    glitched_dir_flag = 'M'
 
                 else:
                     numM = len([x for x in results1[each_glitch]['fval'] if x == 'M'])
@@ -596,6 +620,7 @@ def create_glitch_windpro(results1, results2):
 
 def bottle_one(results, dbcode, entity, probe_code):
 
+    import pdb; pdb.set_trace()
     dates = sorted(results.keys())
     values = [str(results[x]['mean']) for x in dates]
     flags = [str(results[x]['flags']) for x in dates]
@@ -691,8 +716,8 @@ if __name__ == "__main__":
     # you can run the pyGLITCH_backend from here by filling in values that you desire
     _, cursor = mg.connect()
     
-    cnames = mg.gather_column_names(cursor,'MS00134')
-    o1 = mg.system_tables(cursor, 'MS00134', 'WNDPRI02', cnames,'2014-04-03 00:00:00','2014-04-05 00:00:00')
+    cnames = mg.gather_column_names(cursor,'MS04311')
+    o1 = mg.system_tables(cursor, 'MS04311', 'AIRPRI01', cnames,'2012-02-01 00:00:00','2013-03-01 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
@@ -702,6 +727,6 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 45, o1, 'MS001','34','WNDPRI02')
+    returned_value = glitch_setup(vd, 45, o1, 'MS043','11','AIRPRI01')
 
     print returned_value

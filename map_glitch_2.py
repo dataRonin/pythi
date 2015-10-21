@@ -86,10 +86,11 @@ def system_tables(cursor, table_name, probe_code, cnames, startdate, enddate):
     except Exception:
         try:
             sql = "select " + cnames_to_list + " from fsdbdata.dbo." + table_name + " where date_time >= \'" + startdate + "\' and date_time <= \'" + enddate +"\' and probe like \'" + probe_code +"\' order by date_time asc"
+
             cursor.execute(sql)
             first_entry = cursor.fetchone()
 
-            od = dict(zip(cnames_to_list, [[str(x)] for x in first_entry]))
+            od = dict(zip(cnames, [[str(x)] for x in first_entry]))
 
             for row in cursor:
                 for index, y in enumerate(cnames):
@@ -104,7 +105,7 @@ def system_tables(cursor, table_name, probe_code, cnames, startdate, enddate):
                 cursor.execute(sql)
                 first_entry = cursor.fetchone()
 
-                od = dict(zip(cnames_to_list, [[str(x)] for x in first_entry]))
+                od = dict(zip(cnames, [[str(x)] for x in first_entry]))
 
                 for row in cursor:
                     for index, y in enumerate(cnames):
@@ -119,7 +120,7 @@ def system_tables(cursor, table_name, probe_code, cnames, startdate, enddate):
                     cursor.execute(sql)
                     first_entry = cursor.fetchone()
 
-                    od = dict(zip(cnames_to_list, [[str(x)] for x in first_entry]))
+                    od = dict(zip(cnames, [[str(x)] for x in first_entry]))
 
                     for row in cursor:
                         for index, y in enumerate(cnames):
