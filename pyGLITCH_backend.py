@@ -1,3 +1,4 @@
+﻿#!usr/bin/python
 import csv
 import pymssql
 import time
@@ -7,30 +8,23 @@ import sys
 import math
 import map_glitch_2 as mg
 
-""" pyGLITCH_backend.py controls the backend logic for doing the glitch on time series data. 
+# def connect():
+#     ''' connect to the fsdbdata database'''
 
-Modifications to :mod:pyGLITCH_backend are the fastest way to make extensible the glitching.
-"""
+#     conn = pymssql.connect(server = 'stewartia.forestry.oregonstate.edu:1433', user='ltermeta', password='$CFdb4LterWeb!')
+#     cursor = conn.cursor()
+
+#     return conn, cursor
 
 def drange(start, stop, step):
-  """ Returns a date range generator 
-
-  :start: date time to start, in YYYY-mm-dd HH:MM:SS
-  :end: date time to end, in YYYY-mm-dd HH:MM:SS
-  :step: interval, in integer minutes
-  """
+  ''' returns a date range generator '''
   r = start
   while r < stop:
       yield r
       r += step
 
 def create_date_list_from_mapg(output_from_mapg):
-    """Get all dates where we have valid data to key from
-
-    :output_from_mapg: a dictionary which contains the start and end dates to glitch, as well as the column names to get the glitch from.
-
-    .. warning :: if the function fails here, try specifying the internal variable "word" to match the date-time word in the data. Also, you might want to change the date-time format. The official Python documentation contains a massive list of these formats (python.com).
-    """
+    """Get all dates where we have valid data to key from"""
 
     try:
         word = 'DATE_TIME'
@@ -56,15 +50,11 @@ def create_date_list_from_mapg(output_from_mapg):
                     dr_1 = output_from_mapg[word]
                     dr = [datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S') for x in dr_1]
                 except Exception:
-                    print("please specify the date time column's name or format explicitly in pyGLITCH_backend")
+                    print "please specify the date time columns name"
                     return False
 
 def create_date_bounds_from_date_list(dr,interval):
-    """ Creates date bounds from the list of dates found in the given range. 
-
-    :dr: the date range list from the dates found from SQL server in form YYYY-mm-dd HH:MM:SS
-    :interval: the number of minutes over which to glitch.
-    """
+    """ creates date bounds from date list"""
 
     if dr == False:
         return False
@@ -82,12 +72,7 @@ def create_date_bounds_from_date_list(dr,interval):
     return first_date, last_date
 
 def to_dated_dictionary(output_from_mapg, *dr):
-    """Create a data dictionary containing the data columns which are needed to make the outputs from glitch
-
-    The columns that are ordinal (date, probename) are logically separated from the mathematical.
-
-    :output_from_mapg: the original data mapping to the sql server which contains all possible columns. 
-    """
+    """create a data dictionary containing the data columns which are needed to make the outputs from glitch"""
 
     try:
         dr
@@ -114,11 +99,7 @@ def to_dated_dictionary(output_from_mapg, *dr):
     return valid_data
 
 def numeric_or_flag(valid_data):
-    """ determine if the data in the valid data is numeric or flag 
-
-    Some of the incoming data is numerical and some is flag. We can detect which is which based on whether or not that data is a string or a number by trying to do math with it
-    """
-
+    """ determine if the data in the valid data is numeric or flag """
     numeric_cols = []
     flag_cols = []
 
@@ -136,7 +117,7 @@ def numeric_or_flag(valid_data):
     return numeric_cols, flag_cols
 
 def is_tot(numeric_cols):
-    """ If the column is a 'total'' return False """
+    """ if the column is a total return fase """
 
     istot = [x for x in numeric_cols if 'TOT' in x]
 
@@ -147,15 +128,7 @@ def is_tot(numeric_cols):
 
 
 def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_code):
-    """ Set up the glitch functions to run on the appropriate inputs; the bulk of the work happens here
-
-    :valid_data: data that has been formatted by :func:valid_data
-    :interval: number of minutes over which to glitch
-    :output_from_mapg: raw output from the database, needed to make the original date list from which glitches come
-    :dbcode: database code, like MS043
-    :entity: entity number, like 11
-    :probe_code: probe to glitch, like AIRCEN01
-    """
+    """ set up the system for glitch"""
 
     # create a list of dates from output of the map - not an iterator!
     dr = create_date_list_from_mapg(output_from_mapg)
@@ -168,7 +141,6 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
     # min range is an ideal range for one minute intervals to aggregate
     one_minute_iterator = [x for x in drange(first_date, last_date, datetime.timedelta(minutes=1))]
-
 
     # get the numeric or flag columns
     nc, fc = numeric_or_flag(valid_data)
@@ -185,6 +157,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
     # if the numeric data is one column and it's not total, then we use the normal glitch
     elif len(nc) == 1 and is_tot(nc) == False:
+        
         print("use glitch")
         data = valid_data[nc[0]]
         flags = valid_data[fc[0]]
@@ -196,34 +169,79 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
     # if the numeric data is more than one column and it's all not total, we will use one of the windy methods
     elif len(nc) >= 1 and is_tot(nc)== False:
-        print("need to use the advanced methods for winds.")
-        print nc
+        
+        print("use windy glitch- either prop or sonic tbd.")
+
         res_multi = {}
 
-        if len(nc) <= 4:
-            dirname = [x for x in nc if 'DIR' in x][0]
-            spdname = [x for x in nc if 'SPD' in x][0]
-            magname = [x for x in nc if 'MAG' in x][0]
+        name_list = []
 
-            name_list = [dirname, spdname, magname]
+        if len(nc) <= 4:
+            
+            
+            try:
+                dirname = [x for x in nc if 'DIR' in x][0]
+                name_list.append(dirname)
+            except Exception:
+                pass
+
+            try:
+                spdname = [x for x in nc if 'SPD' in x][0]
+                name_list.append(spdname)
+            except Exception:
+                pass
+            
+            try:
+                magname = [x for x in nc if 'MAG' in x][0]
+                name_list.append(magname)
+            except Exception:
+                pass
 
         elif len(nc) >=4: 
-            dirname = [x for x in nc if 'DIR' in x][0]
-            spdname = [x for x in nc if 'SPD' in x][0]
-            airname = [x for x in nc if 'AIR' in x][0]
-            uxname = [x for x in nc if 'WUX' in x][0]
-            uyname = [x for x in nc if 'WUY' in x][0]
 
-            name_list = [dirname, spdname, airname, uxname, uyname]
+
+            try:
+                dirname = [x for x in nc if 'DIR' in x][0]
+                name_list.append(dirname)
+            except Exception:
+                pass
+
+            try:    
+                spdname = [x for x in nc if 'SPD' in x][0]
+                name_list.append(spdname)
+            except Exception:
+                pass
+
+            try:
+                airname = [x for x in nc if 'AIR' in x][0]
+                name_list.append(airname)
+            except Exception:
+                pass
+
+            try:
+                uxname = [x for x in nc if 'WUX' in x][0]
+                name_list.append(uxname)
+            except Exception:
+                pass
+
+            try:
+                uyname = [x for x in nc if 'WUY' in x][0]
+                name_list.append(uyname)
+            except Exception:
+                pass
 
         for each_item in name_list:
+
             flag_name = each_item + "_FLAG"
             
             try: 
                 flags = valid_data[flag_name]
+            
             except Exception:
+                # if flags from other attributes fail, result back to the flag from speed for these attributes
                 flags = valid_data[fc[0]]
 
+            
             data = valid_data[each_item]
 
             res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"NORMAL")
@@ -231,7 +249,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             if each_item not in res_multi:
                 res_multi[each_item] = res
             else:
-                print("item already accounted for")
+                print "item already accounted for"
 
             # repopulate the super-iterator
             super_iterator = drange(first_date, last_date + datetime.timedelta(minutes=interval), datetime.timedelta(minutes=interval))
@@ -249,21 +267,20 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
         res_multi.update({dirname : winddir})
 
-        # every key in the multiple items we want to loop over, except direction
-        for each_key in res_multi.keys():
+        possible_glitches = res_multi.keys()
 
-            try:
-                if spdname in each_key or airname in each_key or uxname in each_key or uyname in each_key:
-                    res2 = create_glitch(res_multi[each_key],"NORMAL")
-                    res_multi.update({each_key:res2})
-                else:
-                    pass
-            except Exception:
-                # direction and magnitude
-                pass
+        try:
+            can_glitch = [x for x in res_multi.keys() if x not in [dirname, magname]]
+        except Exception:
+            can_glitch = [x for x in res_multi.keys() if x != dirname]
 
-        returnable = bottle_many(res_multi, dbcode, entity, probe_code)
+        for each_glitch in can_glitch:
+            res2 = create_glitch(res, "NORMAL")
+            res_multi.update({each_glitch: res2})
         
+        returnable = bottle_many(res_multi, dbcode, entity, probe_code)
+        #print res_multi
+        #import pdb; pdb.set_trace()
         return returnable
 
     elif len(nc) >= 1 and is_tot(nc) != False:
@@ -291,7 +308,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             if each_column not in res_multi:
                 res_multi[each_column]=res2
             elif each_column in res_multi:
-                print("column already added")
+                print "column already added"
 
             # repopulate the super-iterator
             super_iterator = drange(first_date, last_date + datetime.timedelta(minutes=interval), datetime.timedelta(minutes=interval))
@@ -305,13 +322,9 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         return returnable
 
 def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
-    """ Iterating over one data and its flags 
-
-    :super_iterator: the ideal interval's iterator
-    :one_minute_iterator:  the one minute interval's iterator
-    :data: the valid data to glitch
-    :flags: the flags associated with that data
-    :method: single or multiple, which is wind, sonic, or solar.
+    """ iterating over one data and its flags.
+    super_iterator is the ideal interval,
+    one_minute_iterator is the one minute interval
     """
 
     # store the values for the current range and their flags
@@ -402,10 +415,8 @@ def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
     return results
 
 def create_glitch(results, method):
-    """ Condensation of the glitches and assignment of the flags
-
-    :results: are the results generated by the glitch, a dictionary containing lists of values and dates and flags associated with them.
-    :method: is the type of glitch to do (TOTAL, SONIC, etc.)
+    """
+    Time to make the right glitches
     """
     # output structure
     final_glitch = {}
@@ -475,14 +486,10 @@ def create_glitch(results, method):
     return final_glitch
 
 def create_glitch_windpro(results1, results2):
-    """ Creates the wind glitch for propellor
-
-    From the speed we get the x and y components for each direction for the magnitude
+    """
+    from the speed we get the x and y components for each direction for the magnitude
     then we add these up over the course of the glitch and take the sqrt
     we also do the wind direction here
-
-    :results1: results for wind speed
-    :results2: results for wind direction
     """
     final_glitch_mag= {}
     final_glitch_dir ={}
@@ -515,10 +522,10 @@ def create_glitch_windpro(results1, results2):
             except Exception:
                 glitched_mag = None
 
-            try: 
+            try:
                 theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)
             except Exception:
-                glitched_dir = None
+                theta_u = None
 
             try:
                 glitched_dir = round(math.degrees(theta_u),3)
@@ -540,12 +547,6 @@ def create_glitch_windpro(results1, results2):
 
                     glitched_mag_flag = 'A'
                     glitched_dir_flag = 'A'
-
-                elif glitched_mag == None:
-                    glitched_mag_flag = 'M'
-
-                elif glitched_dir == None:
-                    glitched_dir_flag = 'M'
 
                 else:
                     numM = len([x for x in results1[each_glitch]['fval'] if x == 'M'])
@@ -614,13 +615,10 @@ def create_glitch_windpro(results1, results2):
         except Exception:
             final_glitch_dir[each_glitch] ={'mean': None, 'flags': 'M'}
 
-
-    #print(final_glitch_mag, final_glitch_dir)
     return final_glitch_mag, final_glitch_dir
 
 def bottle_one(results, dbcode, entity, probe_code):
 
-    import pdb; pdb.set_trace()
     dates = sorted(results.keys())
     values = [str(results[x]['mean']) for x in dates]
     flags = [str(results[x]['flags']) for x in dates]
@@ -631,12 +629,12 @@ def bottle_one(results, dbcode, entity, probe_code):
     for index, item in enumerate(datestrings):
       new_row = [str(dbcode), str(entity), probe_code, item, flags[index], values[index]]
       nr = ", ".join(new_row)
-      nr_1 = "<tr><td>" + nr[0:]
+      nr_1 = nr[0:] +"</br>"
       all_row.append(nr_1)
 
     my_data = "".join(all_row) 
 
-    returnable = "<html><title>PYTHI - Python Time-Series Harmonization and Integration</title><head></head><body><table><th>DBCODE, PROBE_CODE, DATE_TIME, MEAN, FLAG</th>" + my_data + "</table></body></html>"
+    returnable = "DBCODE, ENTITY, PROBE_CODE, DATE_TIME, FLAG, MEAN</br>" + my_data
 
     return returnable    
 
@@ -653,22 +651,21 @@ def bottle_many(results, dbcode, entity, probe_code):
 
     all_row_2 = []
     #datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
-
-
+    
     for index, each_key in enumerate(names):
         num_indices = len(names)
     
         for each_date in dates:
         
             if each_date not in all_row:
-                all_row[each_date]=[datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S') , str(results[each_key][each_date]['mean']),str(results[each_key][each_date]['flags'])]
+                all_row[each_date]=[datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), dbcode, entity, probe_code , str(results[each_key][each_date]['mean']),str(results[each_key][each_date]['flags'])]
 
             elif each_date in all_row:
                 all_row[each_date].append(str(results[each_key][each_date]['mean']))
                 all_row[each_date].append(str(results[each_key][each_date]['flags']))
 
                 if index == num_indices - 1:
-                    all_row[each_date].append("</td></tr>")
+                    all_row[each_date].append("</br>")
                 else: 
                     pass
 
@@ -676,28 +673,25 @@ def bottle_many(results, dbcode, entity, probe_code):
     for each_item in sorted(all_row.keys()):
          
         nr = ", ".join(all_row[each_item])
-        nr_1 = "<tr><td>" + str(dbcode) + "," + str(entity) + "," + probe_code + "," + nr
-        all_row_2.append(nr_1)
+        all_row_2.append(nr)
 
         my_data = "".join(all_row_2) 
 
-    returnable = "<html><title>PYTHI - Python Time-Series Harmonization and Integration</title><head></head><body><table><th>DBCODE, PROBE_CODE, DATE_TIME," + title_string + "</th>" + my_data + "</table></body></html>"
+    returnable = "DBCODE, ENTITY, PROBE_CODE, DATE_TIME," + title_string + "</br>" + my_data + "</body></html>"
 
     return returnable 
        
 
 def simple_glitch(dbcode, entity, probe_code, start_date, end_date, interval):
-    """ The basic glitch for most attributes... one value and one flag.
 
-    :dbcode: the database code like MS043
-    :entity: the entity, like 12
-    :probe_code: the probe_code like 'relcen01''
-    :start_date: the first date-time to start from like 2012-10-01 00:00:00 -- it doesn't ever get a "glitch" because nothing precedes it
-    :end_date: the final date time on which the glitch should not exceed.
-    """
     _, cursor = mg.connect()
     dbname = str(dbcode) + str(entity)
     cnames = mg.gather_column_names(cursor, dbname)
+
+    print start_date
+    print end_date
+    print cnames
+
     o1 = mg.system_tables(cursor, dbname, probe_code, cnames, start_date, end_date)
 
     dr = create_date_list_from_mapg(o1)
@@ -710,23 +704,25 @@ def simple_glitch(dbcode, entity, probe_code, start_date, end_date, interval):
 
     returned_html = glitch_setup(vd, int(interval), o1, dbcode, entity, probe_code)
 
-    return returned_html
+    return returned_html 
 
 if __name__ == "__main__":
-    # you can run the pyGLITCH_backend from here by filling in values that you desire
+
     _, cursor = mg.connect()
     
-    cnames = mg.gather_column_names(cursor,'MS04311')
-    o1 = mg.system_tables(cursor, 'MS04311', 'AIRPRI01', cnames,'2012-02-01 00:00:00','2013-03-01 00:00:00')
+    cnames = mg.gather_column_names(cursor,'MS04314')
+     
+
+    o1 = mg.system_tables(cursor, 'MS04314', 'WNDUPL01', cnames,'2014-11-01 00:00:00','2015-05-28 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
-    fd, ld = create_date_bounds_from_date_list(dr, 45)
+    fd, ld = create_date_bounds_from_date_list(dr, 600)
 
     vd = to_dated_dictionary(o1, *dr)
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 45, o1, 'MS043','11','AIRPRI01')
+    returned_value = glitch_setup(vd, 600, o1, 'MS043','14','WNDUPL01')
 
     print returned_value
