@@ -710,10 +710,9 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
     
-    cnames = mg.gather_column_names(cursor,'MS04314')
+    cnames = mg.gather_column_names(cursor,'MS04320')
      
-
-    o1 = mg.system_tables(cursor, 'MS04314', 'WNDUPL01', cnames,'2014-11-01 00:00:00','2015-05-28 00:00:00')
+    o1 = mg.system_tables(cursor, 'MS04320', 'SNOCEN01', cnames,'2012-11-01 00:00:00','2013-05-28 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
@@ -723,6 +722,6 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 600, o1, 'MS043','14','WNDUPL01')
+    returned_value = glitch_setup(vd, 600, o1, 'MS043','20','WNDCEN01')
 
     print returned_value
