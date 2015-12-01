@@ -651,6 +651,13 @@ def create_glitch_windpro(results1, results2):
     return final_glitch_mag, final_glitch_dir
 
 def bottle_one(results, dbcode, entity, probe_code):
+    """ Creates a bottle-served output for a one-mean attribute like airtemp or relhum.
+    """
+
+    names = results.keys()
+
+    title_string_1 = [names[x] + ", " + names[x] + "_FLAG" for x, value in enumerate(names)]
+    title_string = ", ".join(title_string_1)
 
     dates = sorted(results.keys())
     values = [str(results[x]['mean']) for x in dates]
@@ -667,11 +674,13 @@ def bottle_one(results, dbcode, entity, probe_code):
 
     my_data = "".join(all_row)
 
-    returnable = "DBCODE, ENTITY, PROBE_CODE, DATE_TIME, FLAG, MEAN</br>" + my_data
+    returnable = "DBCODE, ENTITY, PROBE_CODE, DATE_TIME," + title_string + "</br>" + my_data + "</body></html>"
 
     return returnable
 
 def bottle_many(results, dbcode, entity, probe_code):
+    """ Creates a bottle-served output for a multi-mean attribute like windpro, etc.
+    """
 
     names = results.keys()
 
