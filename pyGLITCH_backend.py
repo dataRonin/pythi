@@ -18,7 +18,7 @@ def connect():
     return conn, cursor
 
 def flag_count(flag_list):
-    """ Quickly count flags in a list, outputing a dictionary and an integer of the count.
+    """ Quickly count flags in a list, outputing a dictionary and an integer of the count. Not used in this program now, but you might consider implementing it in the future.
 
     The output is like: (<int>, {'x': count(x), 'y': count(y)})
     """
@@ -29,7 +29,7 @@ def flag_count(flag_list):
     return flag_counter
 
 def daily_flag(flag_counter, critical_value, critical_flag):
-    """ Figure out what the daily flag is based on the outputs of the flag counter.
+    """ Figure out what the daily flag is based on the outputs of the flag counter. Not used in Glitch now, but you might consider implementing it in the future.
     """
     if flag_counter[critical_flag] >= critical_value:
         return critical_flag
@@ -46,14 +46,14 @@ def daily_flag(flag_counter, critical_value, critical_flag):
         return critical_flag
 
 def drange(start, stop, step):
-  ''' returns a date range generator '''
+  """Returns a date range generator going from start to stop by an interval of step. Step can be anything, even a decimal or time delta."""
   r = start
   while r < stop:
       yield r
       r += step
 
 def create_date_list_from_mapg(output_from_mapg):
-    """Get all dates where we have valid data to key from"""
+    """Get all dates where we have valid data to key from in the database. Use date, date_time, probe, or probe_code. It doesn't matter!"""
 
     try:
         word = 'DATE_TIME'
@@ -83,7 +83,7 @@ def create_date_list_from_mapg(output_from_mapg):
                     return False
 
 def create_date_bounds_from_date_list(dr,interval):
-    """ creates date bounds from date list"""
+    """ Creates date bounds from date list. Bounding dates are used to specify the start and end of the iteration."""
 
     if dr == False:
         return False
@@ -101,7 +101,11 @@ def create_date_bounds_from_date_list(dr,interval):
     return first_date, last_date
 
 def to_dated_dictionary(output_from_mapg, *dr):
-    """create a data dictionary containing the data columns which are needed to make the outputs from glitch"""
+    """Create a data dictionary containing the data columns which are needed to make the outputs from glitch.
+
+    DATE and PROBE containing columns are not considered part of the `data`.
+    Returns `valid_data`, a list of column names which contain either numerical data or flag data. For example, `SOLAR_MEAN` and `SOLAR_MEAN_FLAG`.
+    """
 
     try:
         dr
@@ -128,7 +132,7 @@ def to_dated_dictionary(output_from_mapg, *dr):
     return valid_data
 
 def numeric_or_flag(valid_data):
-    """ determine if the data in the valid data is numeric or flag """
+    """ Determine if the data in the `valid_data` list is numeric or flag. The test is we look at the first thing in that data vector and ask if it can be made into an upper-case. Obviously numbers and none-types cannot."""
     numeric_cols = []
     flag_cols = []
 
@@ -146,18 +150,21 @@ def numeric_or_flag(valid_data):
     return numeric_cols, flag_cols
 
 def is_tot(numeric_cols):
-    """ if the column is a total return false """
+    """ If the column is a total it returns the column name in a list; otherwise it returns a false. Updated to deal with the `TOT_MEAN` situation.
+
+    """
 
     istot = [x for x in numeric_cols if 'TOT' in x and 'MEAN' not in x]
 
     if istot != []:
+        # If there's only one `total` as there often is, it will be named in the 0th index of `is_tot`.
         return istot
     else:
         return False
 
 
 def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_code):
-    """ Set up and ultimately run the GLITCH. Three ranges are passed over: dr, which is the actual dates measurements were taken; super_iterator, which is the ideal range we want to map into, and one_minute_iterator, which is 1 minute copies of the mean that subdivide each actually measured interval. """
+    """ Sets up and ultimately runs the GLITCH. Three ranges are passed over: dr, which is the actual dates measurements were taken; super_iterator, which is the ideal range we want to map into, and one_minute_iterator, which is 1 minute copies of the mean that subdivide each actually measured interval. """
 
 
     # create a list of dates from output of the map - not an iterator!
@@ -173,13 +180,12 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
     temp_one_minute_iterator = drange(first_date, last_date, datetime.timedelta(minutes=1))
     one_minute_iterator = [x for x in temp_one_minute_iterator]
 
-    #import pdb; pdb.set_trace()
     # get the numeric or flag columns
     nc, fc = numeric_or_flag(valid_data)
 
     # if the numeric data is one column and it is a total, our duration is the number of minutes in that total
     if len(nc) == 1 and is_tot(nc) != False:
-        print("use total glitch")
+        print("Using total-based GLITCH")
 
         # identify the data and flags within the valid data
         data = valid_data[nc[0]]
@@ -200,7 +206,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
     # if the numeric data is one column and it's not total, then we use the normal glitch
     elif len(nc) == 1 and is_tot(nc) == False:
 
-        print("use glitch")
+        print("Using mean-based GLITCH")
         data = valid_data[nc[0]]
         flags = valid_data[fc[0]]
 
@@ -219,13 +225,13 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
     # if the numeric data is more than one column and it's all not total, we will use one of the windy methods
     elif len(nc) >= 1 and is_tot(nc)== False:
 
-        print("use windy glitch- either prop or sonic tbd.")
+        print("Using windy glitch...")
         res_multi = {}
         name_list = []
 
-        # prop
+        # propellor has less than 4 outputs
         if len(nc) <= 4:
-
+            print("... from propellor anemometer...")
 
             try:
                 dirname = [x for x in nc if 'DIR' in x][0]
@@ -247,8 +253,8 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
         # sonic
         elif len(nc) >=4:
-
-
+            print("... from sonic anemometer ...")
+            # the statements below will find all the names in the snc list and assign them to variables. The iterations through the flags will go in the same order.
             try:
                 dirname = [x for x in nc if 'DIR' in x][0]
                 name_list.append(dirname)
@@ -280,7 +286,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
                 pass
 
         for each_item in name_list:
-
+            # note that this loop is outside the prior tests. The list has already been constructed in the order of [dir, speed, air, ux, uy] for the sonics or [dir, speed, mag] for the props
             flag_name = each_item + "_FLAG"
 
             try:
@@ -288,10 +294,11 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
             except Exception:
                 # if flags from other attributes fail, result back to the flag from speed for these attributes
-                flags = valid_data[fc[0]]
+                flags = valid_data[spdname + "_FLAG"]
 
             data = valid_data[each_item]
 
+            # glitch is the gathering of the data at the one-minute resolution. So it is okay that we gather all the data using the "NORMAL" method here, because we will aggregate it using special wind methods later.
             res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"NORMAL")
 
             if each_item not in res_multi:
@@ -299,12 +306,13 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             else:
                 print("item already accounted for")
 
-            # repopulate the super-iterator
+            # Repopulate the super-iterator. Once it has been 'run through' it has to be regenerated.
             super_iterator = drange(first_date, last_date + datetime.timedelta(minutes=interval), datetime.timedelta(minutes=interval))
 
-            # repopulate the min-range
+            # Repopulate the one-minute iterator.
             one_minute_iterator = [x for x in drange(first_date, last_date, datetime.timedelta(minutes=1))]
 
+        # whether computing wind from propellor or from sonic, just lump together the mag and dir computations in one function. Then, in sonic, you don't have to use this mag calculation, so it will never appear in the results.
         windmag, winddir = create_glitch_windpro(res_multi[spdname], res_multi[dirname])
 
         # we only get "mag" from prop
@@ -315,6 +323,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
 
         res_multi.update({dirname : winddir})
 
+        import pdb; pdb.set_trace()
         possible_glitches = res_multi.keys()
 
         try:
@@ -371,9 +380,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         return returnable
 
 def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
-    """ iterating over one data and its flags.
-    super_iterator is the ideal interval,
-    one_minute_iterator is the one minute interval
+    """ `glitch` iterates over the raw data, spreading it out into 1 minute increments. It can function as method = "NORMAL" which means that the data itself is just repeated for the measured interval however many minutes are in that measured interval, or it can function as method = "TOTAL" whihc means that the data is divided by the duration of the interval, and then repeated for as many minutes are in the interval.
     """
 
     # store the values for the current range and their flags
@@ -494,8 +501,7 @@ def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
     return results
 
 def create_glitch(results, method):
-    """
-    Time to make the right glitches
+    """ Creates a final structure for the `glitch` that PYTHI or other interfaces can output.
     """
     # output structure
     final_glitch = {}
@@ -588,7 +594,20 @@ def create_glitch_windpro(results1, results2):
     final_glitch_mag= {}
     final_glitch_dir ={}
 
+
     for each_glitch in sorted(results1.keys()):
+
+        if len(results1[each_glitch]['val']) > 1:
+            results1[each_glitch]['val'].pop(0)
+            results1[each_glitch]['val'].append(results1[each_glitch]['val'][-1])
+            results1[each_glitch]['fval'].pop(0)
+            results1[each_glitch]['fval'].append(results1[each_glitch]['val'][-1])
+
+        if len(results2[each_glitch]['val']) > 1:
+            results2[each_glitch]['val'].pop(0)
+            results2[each_glitch]['val'].append(results2[each_glitch]['val'][-1])
+            results2[each_glitch]['fval'].pop(0)
+            results2[each_glitch]['fval'].append(results2[each_glitch]['val'][-1])
 
         if results1[each_glitch]['val'] != [] and results2[each_glitch]['val'] != []:
 
@@ -602,14 +621,24 @@ def create_glitch_windpro(results1, results2):
                 pass
 
             try:
-                ypart = (sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)**2
+                # for python 2
+                ypart = (sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)**2
             except Exception:
-                ypart = None
+                try:
+                    # for python 3
+                    ypart = (sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in zip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)**2
+                except Exception:
+                    ypart = None
 
             try:
-                xpart = (sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)**2
+                # for python 2
+                xpart = (sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)**2
             except Exception:
-                xpart = None
+                try:
+                    # for python 3
+                    xpart = (sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in zip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)**2
+                except Exception:
+                    xpart = None
 
             try:
                 glitched_mag = math.sqrt(ypart + xpart)
@@ -617,9 +646,12 @@ def create_glitch_windpro(results1, results2):
                 glitched_mag = None
 
             try:
-                theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and x != 'None'])/num_valid_obs)
+                theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)
             except Exception:
-                theta_u = None
+                try:
+                    theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in zip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in zip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)
+                except Exception:
+                    theta_u = None
 
             try:
                 glitched_dir = round(math.degrees(theta_u),3)
@@ -650,25 +682,35 @@ def create_glitch_windpro(results1, results2):
                     numQ = len([x for x in results1[each_glitch]['fval'] if x == 'Q'])
                     numQ2 = len([x for x in results2[each_glitch]['fval'] if x == 'Q'])
 
-                    # test that the wind is not missing separately
-                    if numM2/num_flags2 > 0.2:
+                    # Flagging algorithm --
+                    # if estimated > 0.05, E
+                    if numE/num_flags > 0.05 or numE2/num_flags2 > 0.05:
+                        glitched_mag_flag = 'E'
+                        glitched_dir_flag = 'E'
+
+                    # if questionable > 0.05, Q
+                    elif numQ/num_flags > 0.05 or numQ2/num_flags2 > 0.05:
+                        glitched_mag_flag = 'Q'
+                        glitched_dir_flag = 'Q'
+
+                    # if missing > 0.2, M -- if in the DIR, then both DIR and MAG are missing
+                    elif numM2/num_flags2 > 0.2:
                         glitched_dir_flag = 'M'
                         glitched_dir = None
                         glitched_mag_flag = 'M'
                         glitched_mag = None
 
+                    # if only the mag is missing (due to spd being missing), dir is not missing
                     elif numM/num_flags > 0.2:
                         glitched_mag_flag = 'M'
                         glitched_mag = None
 
-                    elif numE/num_flags > 0.05 or numE2/num_flags2 > 0.05:
-                        glitched_mag_flag = 'E'
-                        glitched_dir_flag = 'E'
-
-                    elif numM/num_flags <= 0.2 and (numE + numM + numQ)/num_flags > 0.05 or numM2/num_flags2 > 0.2 and (numE2 + numM2 + numQ2)/num_flags2 > 0.05:
+                    # if the sum of E, M, and Q for either > 0.05, Q
+                    elif (numE + numM + numQ)/num_flags > 0.05 or (numE2 + numM2 + numQ2)/num_flags2 > 0.05:
                         glitched_mag_flag = 'Q'
                         glitched_dir_flag = 'Q'
 
+                    # otherwise, A (will get B or N later)
                     else:
                         glitched_mag_flag = 'A'
                         glitched_dir_flag = 'A'
@@ -691,13 +733,19 @@ def create_glitch_windpro(results1, results2):
             glitched_dir = None
             glitched_dir_flag = 'M'
 
-        # throw b or n flag if speed or mag is less than detection limits
-        if glitched_mag < 1.0 and glitched_mag > 0.3:
-            glitched_mag_flag = "B"
-        elif glitched_mag <= 0.3:
-            glitched_mag_flag = "N"
-        else:
-            pass
+        try:
+            # throw b or n flag if speed or mag is less than detection limits
+            if glitched_mag < 1.0 and glitched_mag > 0.3:
+                glitched_mag_flag = "B"
+            elif glitched_mag <= 0.3:
+                glitched_mag_flag = "N"
+            else:
+                pass
+        except Exception:
+            if glitched_mag != None and glitched_mag != "None":
+                glitched_mag_flag = "A"
+            elif glitched_mag == None or glitched_mag == "None":
+                glitched_mag_flag = "M"
 
         try:
             final_glitch_mag[each_glitch] = {'mean': round(glitched_mag,2), 'flags': glitched_mag_flag}
@@ -815,9 +863,9 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
 
-    cnames = mg.gather_column_names(cursor,'MS04313')
+    cnames = mg.gather_column_names(cursor,'MS04334')
 
-    o1 = mg.system_tables(cursor, 'MS04313', 'PPTCEN01', cnames,'2014-11-01 00:00:00','2015-01-20 00:00:00')
+    o1 = mg.system_tables(cursor, 'MS04334', 'WNDPRI02', cnames,'2014-10-01 00:00:00','2015-01-01 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
@@ -827,6 +875,8 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 90, o1, 'MS043','13','PPTCEN01')
+    returned_value = glitch_setup(vd, 90, o1, 'MS043','34','WNDPRI02')
+
+    import pdb; pdb.set_trace()
 
     print(returned_value)
