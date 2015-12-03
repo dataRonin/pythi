@@ -46,9 +46,9 @@ def generate_accordion():
 def links_to_probes():
     """ creates links to generate urls with probe names from selection"""
     startdate = request.forms.get('startdate')
-    print startdate
+    print(startdate)
     enddate = request.forms.get('enddate')
-    print enddate
+    print(enddate)
     bigname = request.forms.get('menu-selection')
     pp = ui.all_the_probes(bigname)
     return_string = ui.accordion_probes(bigname, startdate, enddate)
@@ -61,7 +61,7 @@ def links_to_datas(dbcode):
     startdate = request.forms.get('startdate')
     enddate = request.forms.get('enddate')
     pc = request.forms.get('menu-selection')
-    
+
     # the 7-digit code, like MS04312 etc.
     dbcode = dbcode
 

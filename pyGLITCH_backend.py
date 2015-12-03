@@ -79,7 +79,7 @@ def create_date_list_from_mapg(output_from_mapg):
                     dr_1 = output_from_mapg[word]
                     dr = [datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S') for x in dr_1]
                 except Exception:
-                    print "please specify the date time columns name"
+                    print("please specify the date time columns name")
                     return False
 
 def create_date_bounds_from_date_list(dr,interval):
@@ -123,7 +123,7 @@ def to_dated_dictionary(output_from_mapg, *dr):
             if each_key not in valid_data:
                 valid_data[each_key] = dict(temp_d)
             else:
-                print "key is already in valid_data"
+                print("key is already in valid_data")
 
     return valid_data
 
@@ -134,11 +134,11 @@ def numeric_or_flag(valid_data):
 
     for each_key in valid_data.keys():
         try:
-            is_number = float(valid_data[each_key].values()[0])
+            is_number = float(list(valid_data[each_key].values())[0])
             numeric_cols.append(each_key)
         except (TypeError, ValueError):
             try:
-                is_string = (valid_data[each_key].values()[0]).upper()
+                is_string = (list(valid_data[each_key].values())[0]).upper()
                 flag_cols.append(each_key)
             except AttributeError:
                 continue
@@ -146,18 +146,19 @@ def numeric_or_flag(valid_data):
     return numeric_cols, flag_cols
 
 def is_tot(numeric_cols):
-    """ if the column is a total return fase """
+    """ if the column is a total return false """
 
-    istot = [x for x in numeric_cols if 'TOT' in x]
+    istot = [x for x in numeric_cols if 'TOT' in x and 'MEAN' not in x]
 
     if istot != []:
-        return x
+        return istot
     else:
         return False
 
 
 def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_code):
-    """ set up the system for glitch"""
+    """ Set up and ultimately run the GLITCH. Three ranges are passed over: dr, which is the actual dates measurements were taken; super_iterator, which is the ideal range we want to map into, and one_minute_iterator, which is 1 minute copies of the mean that subdivide each actually measured interval. """
+
 
     # create a list of dates from output of the map - not an iterator!
     dr = create_date_list_from_mapg(output_from_mapg)
@@ -169,8 +170,10 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
     super_iterator = drange(first_date, last_date + datetime.timedelta(minutes=interval), datetime.timedelta(minutes=interval))
 
     # min range is an ideal range for one minute intervals to aggregate
-    one_minute_iterator = [x for x in drange(first_date, last_date, datetime.timedelta(minutes=1))]
+    temp_one_minute_iterator = drange(first_date, last_date, datetime.timedelta(minutes=1))
+    one_minute_iterator = [x for x in temp_one_minute_iterator]
 
+    #import pdb; pdb.set_trace()
     # get the numeric or flag columns
     nc, fc = numeric_or_flag(valid_data)
 
@@ -178,11 +181,20 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
     if len(nc) == 1 and is_tot(nc) != False:
         print("use total glitch")
 
+        # identify the data and flags within the valid data
         data = valid_data[nc[0]]
         flags = valid_data[fc[0]]
+        name_list = [x for x in nc]
+
+        if len(name_list) > 1:
+            print("the name list should not be larger than 1 for this method!")
+
+        flag_list = [x+"_FLAG" for x in name_list]
+
+        # results are from the function `glitch`
         res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"TOTAL")
         res2 = create_glitch(res, "TOTAL")
-        returnable = bottle_one(res2, dbcode, entity, probe_code)
+        returnable = bottle_one(res2, dbcode, entity, probe_code, name_list, flag_list)
         return returnable
 
     # if the numeric data is one column and it's not total, then we use the normal glitch
@@ -191,9 +203,17 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         print("use glitch")
         data = valid_data[nc[0]]
         flags = valid_data[fc[0]]
+
+        name_list = [x for x in nc]
+
+        if len(name_list) > 1:
+            print("the name list should not be larger than 1 for this method!")
+
+        flag_list = [x+"_FLAG" for x in name_list]
+
         res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"NORMAL")
         res2 = create_glitch(res,"NORMAL")
-        returnable = bottle_one(res2, dbcode, entity, probe_code)
+        returnable = bottle_one(res2, dbcode, entity, probe_code, name_list, flag_list)
         return returnable
 
     # if the numeric data is more than one column and it's all not total, we will use one of the windy methods
@@ -277,7 +297,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             if each_item not in res_multi:
                 res_multi[each_item] = res
             else:
-                print "item already accounted for"
+                print("item already accounted for")
 
             # repopulate the super-iterator
             super_iterator = drange(first_date, last_date + datetime.timedelta(minutes=interval), datetime.timedelta(minutes=interval))
@@ -337,7 +357,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             if each_column not in res_multi:
                 res_multi[each_column]=res2
             elif each_column in res_multi:
-                print "column already added"
+                print("column already added")
 
             # repopulate the super-iterator
             super_iterator = drange(first_date, last_date + datetime.timedelta(minutes=interval), datetime.timedelta(minutes=interval))
@@ -366,15 +386,29 @@ def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
     # make an iterator to walk the known date range (i.e. 10:00, 10:05, 10:10 etc.)
     date_range_iterator = iter(dr)
 
-    # ex. 2010-10-01 00:00:00 - the first date time of the real date range
-    this_date = date_range_iterator.next()
-
-    # ex. 2010-10-01 00:05:00 - the subsequent date time in the real date range
+    # the outer try is to wrap the stop iteration
     try:
-        subsequent = date_range_iterator.next()
+
+        # ex. 2010-10-01 00:00:00 - the first date time of the real date range
+        try:
+            # for python 3
+            this_date = next(date_range_iterator)
+        except Exception:
+            # for python 2
+            this_date = date_range_iterator.next()
+
+        # ex. 2010-10-01 00:05:00 - the subsequent date time in the real date range
+        try:
+            # for python 3
+            subsequent = next(date_range_iterator)
+        except Exception:
+            # for python 2
+            subsequent = date_range_iterator.next()
 
         if method == "TOTAL":
+            # calculates the duration between the start date and the next measurement taken. For example, with five minute data going from 2014-11-01 00:00:00 to 2014-11-01 00:00:05, this would give back datetime.timedelta(0,300) --> always it is in (days, seconds)
             duration_1= (subsequent-this_date)
+            # convert duration_1 to minutes
             duration = duration_1.seconds/60 + duration_1.days*(86400/60)
         else:
             pass
@@ -384,24 +418,32 @@ def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
         For example, if you gave 2002-10-02 00:00:00 and 2002-10-03 00:00:00 for PPTCEN01, this daily measurement would only include that first midnight point. You could change the end date to 2002-10-03 00:05:00, which would then make sure that the total found at 2002-10-03 was distributed back over the previous interval if needed.
         """)
 
+
     # The first point in the super_iterator is the first input for the GLITCH. The first checkpoint is actually the 0th value, but we haven't accumulated data to this point
-    checkpoint = super_iterator.next()
+    try:
+        checkpoint = next(super_iterator)
+    except Exception:
+        checkpoint = super_iterator.next()
 
     for each_minute in one_minute_iterator:
+
         # if the minute is the checkpoint, update the dictionary to the accumulated values
-        # for example if it is 10-01-01 13:00:00 and that's a 13 min checkpoint, we get the values from 0-12 minutes in the dictionary for that checkpoint(so it is the previous minutes to that one)
+        # for example if it is 10-01-01 13:00:00 and that's a 13 min checkpoint, we get the values from 1-13 minutes in the dictionary for that checkpoint(so it is the previous minutes to that one)
 
         if each_minute == checkpoint and checkpoint not in results:
+
+            # put the checkpoint in the results
             results[checkpoint] = {'val': t_mean, 'fval': f_mean}
 
-            #import pdb; pdb.set_trace()
             # set the storage to empty
             t_mean = []
             f_mean = []
 
             # update the checkpoint by 1:
-            checkpoint = super_iterator.next()
-
+            try:
+                checkpoint = next(super_iterator)
+            except Exception:
+                checkpoint = super_iterator.next()
 
         elif each_minute == checkpoint and checkpoint in results:
             print("Check point at " + datetime.datetime.strftime(each_minute, '%Y-%m-%d %H:%M:%S') + "is in the results already!")
@@ -410,36 +452,44 @@ def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
             pass
 
 
-        # we still have to check if the value changes and start accumulating to the next date...
-        # this would get say between 10-01-01 00:00:00 and 10-01-01 00:00:04
+        # we check if the value changes and start accumulating to the next date...
+        # this would get say between 10-01-01 00:01:00 and 10-01-01 00:05:00 if `this_date` were at 0 and subsequent at 5.
         # for each of these minutes we would give one of the mean values and flags
-        if each_minute >= this_date and each_minute < subsequent and method == "TOTAL":
+        if each_minute > this_date and each_minute <= subsequent and method == "TOTAL":
 
             try:
-                t_mean.append(str(round(float(data[subsequent])/duration),3))
+                # append to the data the total from the subsequent divided by the duration of the interval
+                t_mean.append(str(round(float(data[subsequent])/duration,3)))
                 f_mean.append(flags[subsequent])
+                # if that fails, add the interval
             except Exception:
                 t_mean.append(data[subsequent])
                 f_mean.append(flags[subsequent])
 
-        # we still have to check if the value changes and start accumulating to the next date...
-        # this would get say between 10-01-01 00:00:00 and 10-01-01 00:00:04
+        # we check if the value changes and start accumulating to the next date...
+        # this would get say between 10-01-01 00:01:00 and 10-01-01 00:05:00
         # for each of these minutes we would give one of the mean values and flags
-        if each_minute >= this_date and each_minute < subsequent and method =="NORMAL":
+        if each_minute > this_date and each_minute <= subsequent and method =="NORMAL":
 
             t_mean.append(data[subsequent])
             f_mean.append(flags[subsequent])
 
-        # move up by one in the original search
-        elif each_minute == subsequent:
+        # move up by one the output interval if the current minute is the subsequent. Remove the first entry from the data which represents the former interval and add in the entry for this minute, which represents now.
+        if each_minute == subsequent:
+
+            #print("changing minute start from :" + datetime.datetime.strftime(this_date,'%Y-%m-%d %H:%M:%S'))
             this_date = subsequent
+            #print("to:" + datetime.datetime.strftime(this_date,'%Y-%m-%d %H:%M:%S'))
             try:
-                subsequent = date_range_iterator.next()
+                subsequent = next(date_range_iterator)
             except Exception:
-                return results
+                try:
+                    subsequent = date_range_iterator.next()
+                except Exception:
+                    return results
 
         elif each_minute > subsequent:
-            print "the minute should not exceed the subsequent"
+            print("the minute should not exceed the subsequent")
 
     return results
 
@@ -451,22 +501,33 @@ def create_glitch(results, method):
     final_glitch = {}
 
     for each_glitch in sorted(results.keys()):
+
+        # if it's not the first measurement, we want to make sure that we go from minute 1 to minute end so do this.
+        if len(results[each_glitch]['val']) > 1:
+            results[each_glitch]['val'].pop(0)
+            results[each_glitch]['val'].append(results[each_glitch]['val'][-1])
+            results[each_glitch]['fval'].pop(0)
+            results[each_glitch]['fval'].append(results[each_glitch]['val'][-1])
+
         if results[each_glitch] != [] and method == "TOTAL":
+
             # if the data is precip (or solar total), the results are a sum of the intermediate values, after you have divided by the duration of the interval. If Nones exist it won't add so you will need to instead do the sum of the intermediate values which are not None
             try:
-                mean_val = round(sum(float(results[each_glitch]['val'])),2)
+               # now that the duration is being calculated we can sum again
+                mean_val = round(sum([float(x) for x in results[each_glitch]['val']]),2)
 
             except Exception:
                 values = [float(results[each_glitch]['val'][index]) for index,x in enumerate(results[each_glitch]['val']) if x != None and x != "None"]
 
                 if values == []:
                     mean_val = "None"
+
                 else:
                     mean_val = round(sum(values),2)
 
         elif results[each_glitch] != [] and method == "NORMAL":
             try:
-                mean_val = round(sum(float(results[each_glitch]['val']))/len(results[each_glitch]['val']),2)
+                mean_val = round(sum([float(x) for x in results[each_glitch]['val']])/len(results[each_glitch]['val']),2)
 
             except Exception:
                 values = [float(results[each_glitch]['val'][index]) for index,x in enumerate(results[each_glitch]['val']) if x != None and x != "None"]
@@ -478,7 +539,7 @@ def create_glitch(results, method):
                     mean_val = round(sum(values)/len(values),2)
 
         else:
-            print "some other method?"
+            print("some other method?")
 
         # for flagging
         try:
@@ -513,9 +574,9 @@ def create_glitch(results, method):
         if each_glitch not in final_glitch:
             final_glitch[each_glitch] = {'mean': mean_val, 'flags': flagged_val}
         elif each_glitch in final_glitch:
-            print "already have this glitch"
+            print("already have this glitch")
 
-    print final_glitch
+    print(final_glitch)
     return final_glitch
 
 def create_glitch_windpro(results1, results2):
@@ -650,24 +711,27 @@ def create_glitch_windpro(results1, results2):
 
     return final_glitch_mag, final_glitch_dir
 
-def bottle_one(results, dbcode, entity, probe_code):
-    """ Creates a bottle-served output for a one-mean attribute like airtemp or relhum.
+def bottle_one(results, dbcode, entity, probe_code, name_list, flag_list):
+    """ Creates a bottle-served output for a one-mean attribute like airtemp or relhum. Also works for totals. `name_list` and `flag_list` are created when `glitch_setup` is run.
     """
 
-    names = results.keys()
 
-    title_string_1 = [names[x] + ", " + names[x] + "_FLAG" for x, value in enumerate(names)]
+    # cat together the names and flags in the single glitch scenario
+    title_string_1 = name_list + flag_list
     title_string = ", ".join(title_string_1)
 
-    dates = sorted(results.keys())
+    # set to a list by force in Python 3
+    dates = sorted(list(results.keys()))
+
     values = [str(results[x]['mean']) for x in dates]
     flags = [str(results[x]['flags']) for x in dates]
+
     datestrings = [datetime.datetime.strftime(x,'%Y-%m-%d %H:%M:%S') for x in dates]
 
     all_row = []
 
     for index, item in enumerate(datestrings):
-      new_row = [str(dbcode), str(entity), probe_code, item, flags[index], values[index]]
+      new_row = [str(dbcode), str(entity), probe_code, item, values[index], flags[index]]
       nr = ", ".join(new_row)
       nr_1 = nr[0:] +"</br>"
       all_row.append(nr_1)
@@ -682,7 +746,8 @@ def bottle_many(results, dbcode, entity, probe_code):
     """ Creates a bottle-served output for a multi-mean attribute like windpro, etc.
     """
 
-    names = results.keys()
+    # set to a list by force for python 3
+    names = list(results.keys())
 
     title_string_1 = [names[x] + ", " + names[x] + "_FLAG" for x, value in enumerate(names)]
     title_string = ", ".join(title_string_1)
@@ -725,14 +790,12 @@ def bottle_many(results, dbcode, entity, probe_code):
 
 
 def simple_glitch(dbcode, entity, probe_code, start_date, end_date, interval):
+    """ Does a very simple GLITCH, for testing purposes.
+    """
 
     _, cursor = mg.connect()
     dbname = str(dbcode) + str(entity)
     cnames = mg.gather_column_names(cursor, dbname)
-
-    print start_date
-    print end_date
-    print cnames
 
     o1 = mg.system_tables(cursor, dbname, probe_code, cnames, start_date, end_date)
 
@@ -752,18 +815,18 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
 
-    cnames = mg.gather_column_names(cursor,'MS04320')
+    cnames = mg.gather_column_names(cursor,'MS04313')
 
-    o1 = mg.system_tables(cursor, 'MS04320', 'SNOCEN01', cnames,'2012-11-01 00:00:00','2013-05-28 00:00:00')
+    o1 = mg.system_tables(cursor, 'MS04313', 'PPTCEN01', cnames,'2014-11-01 00:00:00','2015-01-20 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
-    fd, ld = create_date_bounds_from_date_list(dr, 600)
+    fd, ld = create_date_bounds_from_date_list(dr, 90)
 
     vd = to_dated_dictionary(o1, *dr)
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 600, o1, 'MS043','20','WNDCEN01')
+    returned_value = glitch_setup(vd, 90, o1, 'MS043','13','PPTCEN01')
 
-    print returned_value
+    print(returned_value)
