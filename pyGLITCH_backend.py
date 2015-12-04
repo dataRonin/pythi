@@ -162,6 +162,15 @@ def is_tot(numeric_cols):
     else:
         return False
 
+def is_nr(numeric_cols):
+    """ Net Radiometer is actually just means all around, but we need to detect it"""
+
+    isnr = [x for x in numeric_cols if 'NR_' in x]
+
+    if isnr != []:
+        return isnr
+    else:
+        return False
 
 def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_code):
     """ Sets up and ultimately runs the GLITCH. Three ranges are passed over: dr, which is the actual dates measurements were taken; super_iterator, which is the ideal range we want to map into, and one_minute_iterator, which is 1 minute copies of the mean that subdivide each actually measured interval. """
@@ -223,7 +232,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         return returnable
 
     # if the numeric data is more than one column and it's all not total, we will use one of the windy methods
-    elif len(nc) >= 1 and is_tot(nc)== False:
+    elif len(nc) >= 1 and is_nr(nc)== False:
 
         print("Using windy glitch...")
         res_multi = {}
@@ -322,28 +331,38 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             pass
 
         res_multi.update({dirname : winddir})
-
-        import pdb; pdb.set_trace()
         possible_glitches = res_multi.keys()
 
         try:
-            can_glitch = [x for x in res_multi.keys() if x not in [dirname, magname]]
+            # propellor anemometer will have a "magname" to avoid
+            can_glitch = [x for x in sorted(list(res_multi.keys())) if x not in [dirname, magname]]
         except Exception:
-            can_glitch = [x for x in res_multi.keys() if x != dirname]
+            # sonic anemometer will not have a magname to avoid
+            can_glitch = [x for x in sorted(list(res_multi.keys())) if x != dirname]
 
-        for each_glitch in can_glitch:
-            res2 = create_glitch(res, "NORMAL")
-            res_multi.update({each_glitch: res2})
+
+        # to keep these in order, we can't actually just iterate over the keys. Rather we have to do it in one pass. Got to love iterators like that.
+        res_multi.update({each_glitch: create_glitch(res_multi[each_glitch], "NORMAL") for each_glitch in can_glitch})
+
+        for each_date in sorted(res_multi[spdname].keys()):
+
+            if res_multi[spdname][each_date]['mean'] != 'None' and float(res_multi[spdname][each_date]['mean']) < 0.3:
+                res_multi[spdname][each_date]['flags'] = 'N'
+
+            elif res_multi[spdname][each_date]['mean'] != 'None' and float(res_multi[spdname][each_date]['mean']) < 1.0:
+                res_multi[spdname][each_date]['flags']='B'
+            else:
+                pass
+
 
         returnable = bottle_many(res_multi, dbcode, entity, probe_code)
-        #print res_multi
         #import pdb; pdb.set_trace()
         return returnable
 
     # when the numerical columns are more than 1 and the TOTAL needs to be computed
-    elif len(nc) >= 1 and is_tot(nc) != False:
+    elif len(nc) >= 1 and is_nr(nc) != False:
 
-        print("Solar...")
+        print("Computing the net solar...")
 
         res_multi = {}
 
@@ -649,6 +668,7 @@ def create_glitch_windpro(results1, results2):
                 theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in itertools.izip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)
             except Exception:
                 try:
+                    # campbell flips north south directions by
                     theta_u = math.atan2(sum([float(speed) * math.sin(math.radians(float(x))) for (speed, x) in zip(results1[each_glitch]['val'], results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs, sum([float(speed) * math.cos(math.radians(float(x))) for (speed, x) in zip(results1[each_glitch]['val'],results2[each_glitch]['val']) if speed != 'None' and speed != None and x != 'None' and x != None])/num_valid_obs)
                 except Exception:
                     theta_u = None
@@ -863,9 +883,9 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
 
-    cnames = mg.gather_column_names(cursor,'MS04334')
+    cnames = mg.gather_column_names(cursor,'MS04335')
 
-    o1 = mg.system_tables(cursor, 'MS04334', 'WNDPRI02', cnames,'2014-10-01 00:00:00','2015-01-01 00:00:00')
+    o1 = mg.system_tables(cursor, 'MS04335', 'RADPRI02', cnames,'2014-10-01 00:00:00','2015-01-01 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
@@ -875,7 +895,7 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 90, o1, 'MS043','34','WNDPRI02')
+    returned_value = glitch_setup(vd, 90, o1, 'MS043','35','RADPRI02')
 
     import pdb; pdb.set_trace()
 
