@@ -232,7 +232,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         return returnable
 
     # if the numeric data is more than one column and it's all not total, we will use one of the windy methods
-    elif len(nc) >= 1 and is_nr(nc)== False:
+    elif len(nc) >= 1 and is_tot(nc)==False and is_nr(nc)== False:
 
         print("Using windy glitch...")
         res_multi = {}
@@ -360,7 +360,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         return returnable
 
     # when the numerical columns are more than 1 and the TOTAL needs to be computed
-    elif len(nc) >= 1 and is_nr(nc) != False:
+    elif (len(nc) >= 1 and is_nr(nc) != False) or (len(nc) >= 1 and is_tot(nc) != False):
 
         print("Computing the net solar...")
 
@@ -896,7 +896,5 @@ if __name__ == "__main__":
     nc, fc = numeric_or_flag(vd)
 
     returned_value = glitch_setup(vd, 90, o1, 'MS043','35','RADPRI02')
-
-    import pdb; pdb.set_trace()
 
     print(returned_value)
