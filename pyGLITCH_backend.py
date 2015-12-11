@@ -265,22 +265,17 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             print("... from sonic anemometer ...")
             # the statements below will find all the names in the snc list and assign them to variables. The iterations through the flags will go in the same order.
             try:
-                dirname = [x for x in nc if 'DIR' in x][0]
-                name_list.append(dirname)
-            except Exception:
-                pass
-
-            try:
                 spdname = [x for x in nc if 'SPD' in x][0]
                 name_list.append(spdname)
             except Exception:
                 pass
 
             try:
-                airname = [x for x in nc if 'AIR' in x][0]
-                name_list.append(airname)
+                dirname = [x for x in nc if 'DIR' in x][0]
+                name_list.append(dirname)
             except Exception:
                 pass
+
 
             try:
                 uxname = [x for x in nc if 'WUX' in x][0]
@@ -293,6 +288,14 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
                 name_list.append(uyname)
             except Exception:
                 pass
+
+
+            try:
+                airname = [x for x in nc if 'AIR' in x][0]
+                name_list.append(airname)
+            except Exception:
+                pass
+
 
         for each_item in name_list:
             # note that this loop is outside the prior tests. The list has already been constructed in the order of [dir, speed, air, ux, uy] for the sonics or [dir, speed, mag] for the props
@@ -375,12 +378,17 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
             except Exception:
                 flags = valid_data[fc[0]]
 
-            if each_column in is_tot(nc):
-                res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"TOTAL")
-                res2 = create_glitch(res, "TOTAL")
-            else:
+            if is_tot(nc) == False:
                 res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"NORMAL")
                 res2 = create_glitch(res, "NORMAL")
+
+            elif is_tot(nc) != False:
+                if each_column in is_tot(nc):
+                    res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"TOTAL")
+                    res2 = create_glitch(res, "TOTAL")
+                else:
+                    res = glitch(dr, super_iterator, one_minute_iterator, data, flags,"NORMAL")
+                    res2 = create_glitch(res, "NORMAL")
 
 
             if each_column not in res_multi:
@@ -820,7 +828,18 @@ def bottle_many(results, dbcode, entity, probe_code):
     """
 
     # set to a list by force for python 3
-    names = list(results.keys())
+    names_1 = sorted(list(results.keys()))
+
+    if str(entity) == '35' and dbcode == 'MS043':
+        names = ['SW_IN_MEAN', 'SW_OUT_MEAN', 'LW_IN_MEAN', 'LW_OUT_MEAN']
+
+        # order the names and append the tot if exists
+        if 'NR_TOT_MEAN' in names_1:
+            names.append('NR_TOT_MEAN')
+        else:
+            # figure out what is there and append that.
+            net_rad_name = [x for x in names_1 if x not in names][0]
+            names.append(net_rad_name)
 
     title_string_1 = [names[x] + ", " + names[x] + "_FLAG" for x, value in enumerate(names)]
     title_string = ", ".join(title_string_1)
@@ -838,19 +857,17 @@ def bottle_many(results, dbcode, entity, probe_code):
         for each_date in dates:
 
             if each_date not in all_row:
-
                 if each_key == "SOLAR_MEAN":
 
                     try:
-                        all_row[each_date]=[datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), dbcode, entity, probe_code , str(int(results[each_key][each_date]['mean'])),str(results[each_key][each_date]['flags'])]
+                        all_row[each_date]=[dbcode, entity, datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), probe_code , str(int(results[each_key][each_date]['mean'])),str(results[each_key][each_date]['flags'])]
                     except Exception:
-                        all_row[each_date]=[datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), dbcode, entity, probe_code , str(results[each_key][each_date]['mean']),str(results[each_key][each_date]['flags'])]
+                        all_row[each_date]=[dbcode, entity, datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), probe_code , str(results[each_key][each_date]['mean']),str(results[each_key][each_date]['flags'])]
 
                 else:
-                    all_row[each_date]=[datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), dbcode, entity, probe_code , str(results[each_key][each_date]['mean']),str(results[each_key][each_date]['flags'])]
+                    all_row[each_date]=[dbcode, entity, datetime.datetime.strftime(each_date,'%Y-%m-%d %H:%M:%S'), probe_code , str(results[each_key][each_date]['mean']),str(results[each_key][each_date]['flags'])]
 
             elif each_date in all_row:
-
                 if each_key == "SOLAR_MEAN":
                     try:
                         all_row[each_date].append(str(int(results[each_key][each_date]['mean'])))
@@ -858,13 +875,13 @@ def bottle_many(results, dbcode, entity, probe_code):
                         all_row[each_date].append(str(results[each_key][each_date]['mean']))
                 else:
                     all_row[each_date].append(str(results[each_key][each_date]['mean']))
+
                 all_row[each_date].append(str(results[each_key][each_date]['flags']))
 
                 if index == num_indices - 1:
                     all_row[each_date].append("</br>")
                 else:
                     pass
-
 
     for each_item in sorted(list(all_row.keys())):
 
@@ -904,9 +921,9 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
 
-    cnames = mg.gather_column_names(cursor,'MS04315')
+    cnames = mg.gather_column_names(cursor,'MS04335')
 
-    o1 = mg.system_tables(cursor, 'MS04315', 'RADPRI01', cnames,'2014-10-01 00:00:00','2015-01-01 00:00:00')
+    o1 = mg.system_tables(cursor, 'MS04335', 'RADVAN02', cnames,'2014-10-01 00:00:00','2015-01-01 00:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
@@ -916,6 +933,6 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 90, o1, 'MS043','15','RADPRI01')
+    returned_value = glitch_setup(vd, 90, o1, 'MS043','35','RADVAN02')
 
     print(returned_value)
