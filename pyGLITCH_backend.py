@@ -841,6 +841,9 @@ def bottle_many(results, dbcode, entity, probe_code):
             net_rad_name = [x for x in names_1 if x not in names][0]
             names.append(net_rad_name)
 
+    else:
+        names = names_1
+
     title_string_1 = [names[x] + ", " + names[x] + "_FLAG" for x, value in enumerate(names)]
     title_string = ", ".join(title_string_1)
 
