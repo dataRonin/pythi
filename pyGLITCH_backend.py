@@ -10,7 +10,7 @@ import map_glitch_2 as mg
 from collections import defaultdict
 
 def connect():
-    ''' connect to the fsdbdata database'''
+    """Connect to the fsdbdata database"""
 
     conn = pymssql.connect(server = 'stewartia.forestry.oregonstate.edu:1433', user='ltermeta', password='$CFdb4LterWeb!')
     cursor = conn.cursor()
@@ -238,6 +238,7 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         res_multi = {}
         name_list = []
 
+
         # propellor has less than 4 outputs
         if len(nc) <= 4:
             print("... from propellor anemometer...")
@@ -258,7 +259,9 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
                 magname = [x for x in nc if 'MAG' in x][0]
                 name_list.append(magname)
             except Exception:
-                pass
+                # on cenmet when the mag cuts out the column is dropped we need to rebuild it
+                magname = 'WMAG_PRO_MEAN'
+                name_list.append(magname)
 
         # sonic
         elif len(nc) >=4:
@@ -275,7 +278,6 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
                 name_list.append(dirname)
             except Exception:
                 pass
-
 
             try:
                 uxname = [x for x in nc if 'WUX' in x][0]
@@ -347,16 +349,20 @@ def glitch_setup(valid_data, interval, output_from_mapg, dbcode, entity, probe_c
         # to keep these in order, we can't actually just iterate over the keys. Rather we have to do it in one pass. Got to love iterators like that.
         res_multi.update({each_glitch: create_glitch(res_multi[each_glitch], "NORMAL") for each_glitch in can_glitch})
 
-        for each_date in sorted(res_multi[spdname].keys()):
+        if 'SNC' not in spdname:
 
-            if res_multi[spdname][each_date]['mean'] != 'None' and float(res_multi[spdname][each_date]['mean']) < 0.3:
-                res_multi[spdname][each_date]['flags'] = 'N'
+            for each_date in sorted(res_multi[spdname].keys()):
 
-            elif res_multi[spdname][each_date]['mean'] != 'None' and float(res_multi[spdname][each_date]['mean']) < 1.0:
-                res_multi[spdname][each_date]['flags']='B'
-            else:
-                pass
+                if res_multi[spdname][each_date]['mean'] != 'None' and float(res_multi[spdname][each_date]['mean']) < 0.3:
+                    res_multi[spdname][each_date]['flags'] = 'N'
 
+                elif res_multi[spdname][each_date]['mean'] != 'None' and float(res_multi[spdname][each_date]['mean']) < 1.0:
+                    res_multi[spdname][each_date]['flags']='B'
+                else:
+                    pass
+
+        elif 'SNC' in spdname:
+            pass
 
         returnable = bottle_many(res_multi, dbcode, entity, probe_code)
         #import pdb; pdb.set_trace()
@@ -428,6 +434,7 @@ def glitch(dr, super_iterator, one_minute_iterator, data, flags, method):
         try:
             # for python 3
             this_date = next(date_range_iterator)
+
         except Exception:
             # for python 2
             this_date = date_range_iterator.next()
@@ -536,7 +543,7 @@ def create_glitch(results, method):
 
     for each_glitch in sorted(results.keys()):
 
-
+        #import pdb; pdb.set_trace()
         # if it's not the first measurement, we want to make sure that we go from minute 1 to minute end so do this.
         if len(results[each_glitch]['val']) > 1:
             results[each_glitch]['val'].pop(0)
@@ -583,14 +590,17 @@ def create_glitch(results, method):
         try:
             num_flags = len(results[each_glitch]['fval'])
 
-            if 'E' not in results[each_glitch]['fval'] and 'M' not in results[each_glitch]['fval'] and 'Q' not in results[each_glitch]['fval']:
-                flagged_val = 'A'
+            if num_flags == 0:
+                flagged_val = 'M'
+
+            #elif 'E' not in results[each_glitch]['fval'] and 'M' not in results[each_glitch]['fval'] and 'Q' not in results[each_glitch]['fval']:
+                #flagged_val = 'A'
+
 
             else:
-                numM = len([x for x in results[each_glitch]['fval'] if x == 'M'])
-                numE = len([x for x in results[each_glitch]['fval'] if x == 'E'])
-                numQ = len([x for x in results[each_glitch]['fval'] if x == 'Q'])
-
+                numM = len([x for x in results[each_glitch]['fval'] if x.rstrip() == 'M'])
+                numE = len([x for x in results[each_glitch]['fval'] if x.rstrip() == 'E'])
+                numQ = len([x for x in results[each_glitch]['fval'] if x.rstrip() == 'Q'])
 
                 if numE/num_flags > 0.05:
                     flagged_val = 'E'
@@ -701,19 +711,27 @@ def create_glitch_windpro(results1, results2):
                 num_flags = len(results1[each_glitch]['fval'])
                 num_flags2 = len(results2[each_glitch]['fval'])
 
-                # if all the flags are okay then the values are ok
-                if 'E' not in results1[each_glitch]['fval'] and 'M' not in results1[each_glitch]['fval'] and 'Q' not in results1[each_glitch]['fval'] and 'E' not in results2[each_glitch]['fval'] and 'M' not in results2[each_glitch]['fval'] and 'Q' not in results2[each_glitch]['fval']:
 
-                    glitched_mag_flag = 'A'
-                    glitched_dir_flag = 'A'
+                if num_flags == 0:
+                    glitched_mag_flag = 'M'
+
+                if num_flags2 == 0:
+                    glitched_mag_flag = 'M'
+                    glitched_dir_flag = 'M'
+
+                # if all the flags are okay then the values are ok
+                #if 'E' not in results1[each_glitch]['fval'] and 'M' not in results1[each_glitch]['fval'] and 'Q' not in results1[each_glitch]['fval'] and 'E' not in results2[each_glitch]['fval'] and 'M' not in results2[each_glitch]['fval'] and 'Q' not in results2[each_glitch]['fval']:
+
+                #    glitched_mag_flag = 'A'
+                #    glitched_dir_flag = 'A'
 
                 else:
-                    numM = len([x for x in results1[each_glitch]['fval'] if x == 'M'])
-                    numM2 = len([x for x in results2[each_glitch]['fval'] if x == 'M'])
-                    numE = len([x for x in results1[each_glitch]['fval'] if x == 'E'])
-                    numE2 = len([x for x in results2[each_glitch]['fval'] if x == 'E'])
-                    numQ = len([x for x in results1[each_glitch]['fval'] if x == 'Q'])
-                    numQ2 = len([x for x in results2[each_glitch]['fval'] if x == 'Q'])
+                    numM = len([x for x in results1[each_glitch]['fval'] if x.rstrip() == 'M'])
+                    numM2 = len([x for x in results2[each_glitch]['fval'] if x.rstrip() == 'M'])
+                    numE = len([x for x in results1[each_glitch]['fval'] if x.rstrip() == 'E'])
+                    numE2 = len([x for x in results2[each_glitch]['fval'] if x.rstrip() == 'E'])
+                    numQ = len([x for x in results1[each_glitch]['fval'] if x.rstrip() == 'Q'])
+                    numQ2 = len([x for x in results2[each_glitch]['fval'] if x.rstrip() == 'Q'])
 
                     # Flagging algorithm --
                     # if estimated > 0.05, E
@@ -780,6 +798,7 @@ def create_glitch_windpro(results1, results2):
             elif glitched_mag == None or glitched_mag == "None":
                 glitched_mag_flag = "M"
 
+
         try:
             final_glitch_mag[each_glitch] = {'mean': round(glitched_mag,2), 'flags': glitched_mag_flag}
         except Exception:
@@ -840,6 +859,12 @@ def bottle_many(results, dbcode, entity, probe_code):
             # figure out what is there and append that.
             net_rad_name = [x for x in names_1 if x not in names][0]
             names.append(net_rad_name)
+
+    elif str(entity) == '14' and dbcode == 'MS043':
+        names = sorted(list(results.keys()), reverse=True)
+
+    elif str(entity) == '34' and dbcode == 'MS043':
+        names = ['WSPD_SNC_MEAN','WDIR_SNC_MEAN','WUX_SNC_MEAN', 'WUY_SNC_MEAN','WAIR_SNC_MEAN']
 
     else:
         names = names_1
@@ -924,9 +949,9 @@ if __name__ == "__main__":
 
     _, cursor = mg.connect()
 
-    cnames = mg.gather_column_names(cursor,'MS04335')
+    cnames = mg.gather_column_names(cursor,'MS04314')
 
-    o1 = mg.system_tables(cursor, 'MS04335', 'RADVAN02', cnames,'2014-10-01 00:00:00','2015-01-01 00:00:00')
+    o1 = mg.system_tables(cursor, 'MS04314', 'WNDCEN01', cnames,'2015-03-02 22:00:00','2015-03-03 15:00:00')
 
     dr = create_date_list_from_mapg(o1)
 
@@ -936,6 +961,6 @@ if __name__ == "__main__":
 
     nc, fc = numeric_or_flag(vd)
 
-    returned_value = glitch_setup(vd, 90, o1, 'MS043','35','RADVAN02')
+    returned_value = glitch_setup(vd, 90, o1, 'MS043','14','WNDCEN01')
 
     print(returned_value)
